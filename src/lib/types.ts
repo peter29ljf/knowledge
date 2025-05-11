@@ -39,10 +39,16 @@ export interface Announcement {
   publishedAt: number; // Timestamp
 }
 
+export interface QuizAttempt {
+  quizDate: string; // YYYY-MM-DD, unique identifier for the daily quiz
+  score: number; // Score for this specific quiz attempt (e.g., number of correct answers)
+  answers: number[]; // User's selected option indices for each question
+  timestamp: number; // When the quiz was completed
+}
+
 export interface UserScoreData {
-  score: number;
-  // Potentially add history of quizzes taken, scores, etc.
-  // quizAttempts: Array<{ quizId: string, score: number, date: string, answers: number[] }>;
+  score: number; // Cumulative global score
+  quizAttempts?: Record<string, QuizAttempt>; // Keyed by quizDate (YYYY-MM-DD)
 }
 
 export interface AdminMessage { // User to Admin
@@ -60,3 +66,4 @@ export interface AppContent {
   quizzes: Quiz[];
   announcements: Announcement[];
 }
+
