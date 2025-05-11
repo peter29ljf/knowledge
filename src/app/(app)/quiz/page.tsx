@@ -68,14 +68,16 @@ export default function QuizPage() {
           setFeedback(prevFeedback);
           setIsQuestionAnswered(new Array(fetchedQuiz.questions.length).fill(true));
         } else {
-          resetQuizState(); // Call simpler reset
+          // resetQuizState() handles all these individual setStates
+          resetQuizState(); 
+          // Ensure arrays are initialized for a new quiz based on fetchedQuiz.questions.length
           setAnswers(new Array(fetchedQuiz.questions.length).fill(-1));
           setIsQuestionAnswered(new Array(fetchedQuiz.questions.length).fill(false));
           setFeedback(new Array(fetchedQuiz.questions.length).fill({ isCorrect: null, selectedOption: null }));
-          setQuizState('idle');
+          // setQuizState('idle') is already in resetQuizState
         }
       } else {
-        resetQuizState(); // No quiz found, reset
+        resetQuizState(); 
       }
       setIsLoadingQuiz(false);
     } else {
@@ -89,6 +91,42 @@ export default function QuizPage() {
     loadQuiz();
   }, [loadQuiz]);
 
+  
+  const handleSubmitQuiz = useCallback(() => {
+    if (!quiz) return;
+    setQuizState('submitted');
+
+    let correctAnswersCount = 0;
+    quiz.questions.forEach((q, index) => {
+      if (answers[index] === q.correctOptionIndex) {
+        correctAnswersCount += 1;
+      }
+    });
+    
+    const scoreForThisQuizAttempt = correctAnswersCount;
+    setScore(scoreForThisQuizAttempt);
+
+    let pointsToAddToGlobalScore = scoreForThisQuizAttempt;
+    // Check if selectedDate is valid before formatting
+    const isToday = selectedDate ? format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') : false;
+    const withinTime = timeLeft > 0;
+
+    if (isToday && withinTime) {
+      pointsToAddToGlobalScore = 0; 
+      quiz.questions.forEach((q, index) => {
+        if (answers[index] === q.correctOptionIndex) {
+          pointsToAddToGlobalScore += (isToday && withinTime) ? 5 : 1;
+        }
+      });
+    }
+    
+    updateUserScore(pointsToAddToGlobalScore, quiz.date, answers, scoreForThisQuizAttempt);
+    setShowResults(true);
+  }, [quiz, answers, selectedDate, timeLeft, updateUserScore]);
+  // Note: setScore, setQuizState, setShowResults are stable setState dispatchers and technically don't need to be in deps.
+  // Keeping them for clarity or if their identity could somehow change in a more complex scenario (unlikely for useState setters).
+  // Simplified deps: [quiz, answers, selectedDate, timeLeft, updateUserScore]
+
   useEffect(() => {
     if (quizState !== 'active' || timeLeft <= 0) return;
     const timerId = setInterval(() => {
@@ -101,12 +139,12 @@ export default function QuizPage() {
     if (timeLeft === 0 && quizState === 'active') {
       handleSubmitQuiz();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft, quizState]); // handleSubmitQuiz is wrapped in useCallback if needed or deps are managed
+  }, [timeLeft, quizState, handleSubmitQuiz]);
+
 
   const handleStartQuiz = () => {
     setQuizState('active');
-    setTimeLeft(QUIZ_DURATION_MINUTES * 60); // Reset timer on start
+    setTimeLeft(QUIZ_DURATION_MINUTES * 60); 
   };
 
   const handleAnswerSelect = (optionIndex: number) => {
@@ -136,39 +174,6 @@ export default function QuizPage() {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
     }
-  };
-
-  const handleSubmitQuiz = () => {
-    if (!quiz) return;
-    setQuizState('submitted');
-
-    let correctAnswersCount = 0;
-    quiz.questions.forEach((q, index) => {
-      if (answers[index] === q.correctOptionIndex) {
-        correctAnswersCount += 1;
-      }
-    });
-    
-    const scoreForThisQuizAttempt = correctAnswersCount;
-    setScore(scoreForThisQuizAttempt);
-
-    let pointsToAddToGlobalScore = scoreForThisQuizAttempt;
-    const isToday = selectedDate ? format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') : false;
-    const withinTime = timeLeft > 0;
-
-    if (isToday && withinTime) {
-      // Original logic: 5 points for correct answer on today's quiz within time, 1 otherwise.
-      // Assuming 1 base point, 4 bonus points.
-      pointsToAddToGlobalScore = 0; // Recalculate based on new understanding
-      quiz.questions.forEach((q, index) => {
-        if (answers[index] === q.correctOptionIndex) {
-          pointsToAddToGlobalScore += (isToday && withinTime) ? 5 : 1;
-        }
-      });
-    }
-    
-    updateUserScore(pointsToAddToGlobalScore, quiz.date, answers, scoreForThisQuizAttempt);
-    setShowResults(true);
   };
   
   const currentQuestion: QuizQuestion | undefined = quiz?.questions[currentQuestionIndex];
@@ -233,7 +238,6 @@ export default function QuizPage() {
             <Button onClick={() => { setShowResults(true); }} size="lg" variant="outline" className="text-lg py-6">
               View Your Answers
             </Button>
-            {/* "Pick Another Quiz" button removed here */}
           </div>
         </CardContent>
       </Card>
@@ -260,7 +264,7 @@ export default function QuizPage() {
     );
   }
   
-  if (!quiz) { // Should be caught by earlier checks, but as a fallback
+  if (!quiz) { 
      return <div>Loading quiz or quiz not found...</div>;
   }
 
@@ -311,7 +315,7 @@ export default function QuizPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-0 space-y-1">
-                    {!feedback[currentQuestionIndex]?.isCorrect && (
+                    {!feedback[currentQuestionIndex]?.isCorrect && currentQuestion.options[currentQuestion.correctOptionIndex] && (
                       <p>Correct answer: <span className="font-semibold">{currentQuestion.options[currentQuestion.correctOptionIndex].text}</span></p>
                     )}
                     <p className="text-sm pt-1"><span className="font-semibold">Explanation:</span> {currentQuestion.explanation}</p>

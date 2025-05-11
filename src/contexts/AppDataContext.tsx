@@ -67,13 +67,12 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast]); // toast is stable from useToast
 
   useEffect(() => {
     loadInitialData();
   }, [loadInitialData]);
   
-  // Update localStorage key for userScore when user changes and re-initialize state
   useEffect(() => {
     const newKey = `studyquest-userscore-${user?.id || 'guest'}`;
     const storedData = localStorage.getItem(newKey);
@@ -88,18 +87,20 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
       setUserScore({ score: 0, quizAttempts: {} });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]); // Rerun when user.id changes
+  }, [user?.id, setUserScore]);
 
 
-  const fetchLearningMaterial = async (date: string): Promise<LearningMaterial | undefined> => {
+  const fetchLearningMaterial = useCallback(async (date: string): Promise<LearningMaterial | undefined> => {
+    // learningMaterials is a dependency, so this function reference changes when learningMaterials change.
     return learningMaterials.find(m => m.date === date) || dataService.getLearningMaterialByDate(date);
-  };
+  }, [learningMaterials]);
 
-  const fetchQuiz = async (date: string): Promise<Quiz | undefined> => {
+  const fetchQuiz = useCallback(async (date: string): Promise<Quiz | undefined> => {
+    // quizzes is a dependency.
     return quizzes.find(q => q.date === date) || dataService.getQuizByDate(date);
-  };
+  }, [quizzes]);
 
-  const updateUserScore: AppDataContextType['updateUserScore'] = (
+  const updateUserScore: AppDataContextType['updateUserScore'] = useCallback((
     pointsToAddToGlobalScore,
     quizDate,
     userAnswers,
@@ -107,7 +108,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     setUserScore(prevScoreData => {
       let newGlobalTotalScore = prevScoreData.score + pointsToAddToGlobalScore;
-      let grandPrizeReached = false;
+      // let grandPrizeReached = false; // Not used
 
       if (newGlobalTotalScore >= GRAND_PRIZE_THRESHOLD) {
         toast({
@@ -117,7 +118,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           duration: 10000,
         });
         newGlobalTotalScore = 0; // Reset score
-        grandPrizeReached = true;
+        // grandPrizeReached = false; // Not used
       }
 
       const newAttempts: Record<string, QuizAttempt> = {
@@ -131,9 +132,9 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
       };
       return { score: newGlobalTotalScore, quizAttempts: newAttempts };
     });
-  };
-  
-  const sendAdminMessage = async (message: string) => {
+  }, [setUserScore, toast]); // GRAND_PRIZE_THRESHOLD is a constant
+
+  const sendAdminMessage = useCallback(async (message: string) => {
     if (!user) {
       toast({ title: "Error", description: "You must be logged in to send a message.", variant: "destructive" });
       return;
@@ -147,34 +148,34 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     };
     setAdminMessages(prev => [newMessage, ...prev]);
     toast({ title: "Success", description: "Your message has been sent to the administrator." });
-  };
+  }, [user, setAdminMessages, toast]);
 
-  const markAdminMessageAsRead = (messageId: string) => {
+  const markAdminMessageAsRead = useCallback((messageId: string) => {
     setAdminMessages(prev => prev.map(msg => msg.id === messageId ? { ...msg, isRead: true } : msg));
-  };
+  }, [setAdminMessages]);
 
   // Admin functions
-  const addLearningMaterial: AppDataContextType['addLearningMaterial'] = async (material) => {
+  const addLearningMaterial: AppDataContextType['addLearningMaterial'] = useCallback(async (material) => {
     await dataService.addLearningMaterial(material);
     await loadInitialData(); // Refresh data
     toast({ title: "Success", description: "Learning material added." });
-  };
+  }, [loadInitialData, toast]);
 
-  const addQuiz: AppDataContextType['addQuiz'] = async (quiz) => {
+  const addQuiz: AppDataContextType['addQuiz'] = useCallback(async (quiz) => {
     await dataService.addQuiz(quiz);
     await loadInitialData();
     toast({ title: "Success", description: "Quiz added." });
-  };
+  }, [loadInitialData, toast]);
 
-  const addAnnouncement: AppDataContextType['addAnnouncement'] = async (announcement) => {
+  const addAnnouncement: AppDataContextType['addAnnouncement'] = useCallback(async (announcement) => {
     await dataService.addAnnouncement(announcement);
     await loadInitialData();
     toast({ title: "Success", description: "Announcement published." });
-  };
+  }, [loadInitialData, toast]);
   
-  const fetchAllAdminContent = async () => {
+  const fetchAllAdminContent = useCallback(async () => {
     await loadInitialData();
-  };
+  }, [loadInitialData]);
 
 
   return (
