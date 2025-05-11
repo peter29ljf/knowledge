@@ -262,12 +262,12 @@ Sidebar.displayName = "Sidebar"
 
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
-  ButtonProps // Use ButtonProps which includes asChild and children
->(({ className, onClick, children, asChild, ...otherProps }, ref) => {
+  ButtonProps 
+>(({ className, onClick, children: triggerChildren, asChild, ...otherProps }, ref) => {
   const { toggleSidebar } = useSidebar();
 
   return (
-    <Button
+    <Button 
       ref={ref}
       data-sidebar="trigger"
       variant="ghost"
@@ -277,15 +277,10 @@ const SidebarTrigger = React.forwardRef<
         onClick?.(event);
         toggleSidebar();
       }}
-      asChild={asChild} // Pass the asChild prop to the inner Button
-      {...otherProps}   // Pass other props (excluding children and asChild)
+      asChild={asChild} 
+      {...otherProps}   
     >
-      {/* 
-        If 'asChild' is true, the 'Button' component (which becomes a Slot)
-        will use the 'children' passed to SidebarTrigger as its single child.
-        If 'asChild' is false, 'Button' will render its own content, which we provide here.
-      */}
-      {asChild ? children : (
+      {asChild ? triggerChildren : (
         <>
           <PanelLeft />
           <span className="sr-only">Toggle Sidebar</span>
@@ -544,14 +539,16 @@ const sidebarMenuButtonVariants = cva(
   }
 )
 
-const SidebarMenuButton = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<"button"> & {
-    asChild?: boolean
-    isActive?: boolean
-    tooltip?: string | React.ComponentProps<typeof TooltipContent>
-  } & VariantProps<typeof sidebarMenuButtonVariants>
->(
+type SidebarMenuButtonProps = React.PropsWithChildren<
+    Omit<React.ComponentProps<"button">, "children"> & {
+      asChild?: boolean;
+      isActive?: boolean;
+      tooltip?: string | React.ComponentProps<typeof TooltipContent>;
+    } & VariantProps<typeof sidebarMenuButtonVariants>
+  >
+
+
+const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
   (
     {
       asChild = false,
@@ -560,39 +557,42 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
-      children, // Ensure children is part of props
-      ...props
+      children, 
+      ...props 
     },
     ref
   ) => {
-    const Comp = asChild ? Slot : "button"
     const { isMobile, state } = useSidebar()
 
-    const buttonElement = ( // Renamed to avoid conflict if children is a prop
-      <Comp
-        ref={ref}
-        data-sidebar="menu-button"
-        data-size={size}
-        data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-        {...props}
-      >
-        {children} 
-      </Comp>
-    )
+    const commonButtonProps = {
+      "data-sidebar": "menu-button",
+      "data-size": size,
+      "data-active": isActive,
+      className: cn(sidebarMenuButtonVariants({ variant, size }), className),
+      ...props,
+    }
 
+    let buttonElement: JSX.Element;
+
+    if (asChild) {
+      buttonElement = (
+        <Slot ref={ref} {...commonButtonProps}>
+          {children}
+        </Slot>
+      )
+    } else {
+      buttonElement = (
+        <button ref={ref} {...commonButtonProps}>
+          {children}
+        </button>
+      )
+    }
+    
     if (!tooltip) {
       return buttonElement
     }
 
-    if (typeof tooltip === "string") {
-      tooltip = {
-        children: tooltip, // This should be the content of the tooltip, not assigned to children prop of TooltipContent directly
-      }
-    }
-    
-    const { children: tooltipChildren, ...tooltipProps } = typeof tooltip === 'object' ? tooltip : { children: tooltip };
-
+    const tooltipContentProps = typeof tooltip === 'string' ? { children: tooltip } : tooltip;
 
     return (
       <Tooltip>
@@ -601,10 +601,8 @@ const SidebarMenuButton = React.forwardRef<
           side="right"
           align="center"
           hidden={state !== "collapsed" || isMobile}
-          {...tooltipProps}
-        >
-          {tooltipChildren}
-        </TooltipContent>
+          {...tooltipContentProps}
+        />
       </Tooltip>
     )
   }
@@ -731,7 +729,7 @@ const SidebarMenuSubButton = React.forwardRef<
     size?: "sm" | "md"
     isActive?: boolean
   }
->(({ asChild = false, size = "md", isActive, className, children, ...props }, ref) => { // Added children
+>(({ asChild = false, size = "md", isActive, className, children, ...props }, ref) => { 
   const Comp = asChild ? Slot : "a"
 
   return (
