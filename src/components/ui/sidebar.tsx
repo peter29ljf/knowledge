@@ -8,6 +8,7 @@ import { PanelLeft } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import type { ButtonProps } from "@/components/ui/button" // Import ButtonProps
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
@@ -261,9 +262,9 @@ Sidebar.displayName = "Sidebar"
 
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
-  React.ComponentProps<typeof Button>
->(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar()
+  ButtonProps // Use ButtonProps which includes asChild and children
+>(({ className, onClick, children, asChild, ...otherProps }, ref) => {
+  const { toggleSidebar } = useSidebar();
 
   return (
     <Button
@@ -273,16 +274,26 @@ const SidebarTrigger = React.forwardRef<
       size="icon"
       className={cn("h-7 w-7", className)}
       onClick={(event) => {
-        onClick?.(event)
-        toggleSidebar()
+        onClick?.(event);
+        toggleSidebar();
       }}
-      {...props}
+      asChild={asChild} // Pass the asChild prop to the inner Button
+      {...otherProps}   // Pass other props (excluding children and asChild)
     >
-      <PanelLeft />
-      <span className="sr-only">Toggle Sidebar</span>
+      {/* 
+        If 'asChild' is true, the 'Button' component (which becomes a Slot)
+        will use the 'children' passed to SidebarTrigger as its single child.
+        If 'asChild' is false, 'Button' will render its own content, which we provide here.
+      */}
+      {asChild ? children : (
+        <>
+          <PanelLeft />
+          <span className="sr-only">Toggle Sidebar</span>
+        </>
+      )}
     </Button>
-  )
-})
+  );
+});
 SidebarTrigger.displayName = "SidebarTrigger"
 
 const SidebarRail = React.forwardRef<
@@ -549,6 +560,7 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
+      children, // Ensure children is part of props
       ...props
     },
     ref
@@ -556,7 +568,7 @@ const SidebarMenuButton = React.forwardRef<
     const Comp = asChild ? Slot : "button"
     const { isMobile, state } = useSidebar()
 
-    const button = (
+    const buttonElement = ( // Renamed to avoid conflict if children is a prop
       <Comp
         ref={ref}
         data-sidebar="menu-button"
@@ -564,28 +576,35 @@ const SidebarMenuButton = React.forwardRef<
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
         {...props}
-      />
+      >
+        {children} 
+      </Comp>
     )
 
     if (!tooltip) {
-      return button
+      return buttonElement
     }
 
     if (typeof tooltip === "string") {
       tooltip = {
-        children: tooltip,
+        children: tooltip, // This should be the content of the tooltip, not assigned to children prop of TooltipContent directly
       }
     }
+    
+    const { children: tooltipChildren, ...tooltipProps } = typeof tooltip === 'object' ? tooltip : { children: tooltip };
+
 
     return (
       <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipTrigger asChild>{buttonElement}</TooltipTrigger>
         <TooltipContent
           side="right"
           align="center"
           hidden={state !== "collapsed" || isMobile}
-          {...tooltip}
-        />
+          {...tooltipProps}
+        >
+          {tooltipChildren}
+        </TooltipContent>
       </Tooltip>
     )
   }
@@ -712,7 +731,7 @@ const SidebarMenuSubButton = React.forwardRef<
     size?: "sm" | "md"
     isActive?: boolean
   }
->(({ asChild = false, size = "md", isActive, className, ...props }, ref) => {
+>(({ asChild = false, size = "md", isActive, className, children, ...props }, ref) => { // Added children
   const Comp = asChild ? Slot : "a"
 
   return (
@@ -730,7 +749,9 @@ const SidebarMenuSubButton = React.forwardRef<
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </Comp>
   )
 })
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton"
