@@ -233,9 +233,7 @@ export default function QuizPage() {
             <Button onClick={() => { setShowResults(true); }} size="lg" variant="outline" className="text-lg py-6">
               View Your Answers
             </Button>
-            <Button onClick={() => { setSelectedDate(new Date()); setQuiz(null); resetQuizState(); }} size="lg" className="text-lg py-6">
-              Pick Another Quiz
-            </Button>
+            {/* "Pick Another Quiz" button removed here */}
           </div>
         </CardContent>
       </Card>
