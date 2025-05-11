@@ -262,12 +262,13 @@ Sidebar.displayName = "Sidebar"
 
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
-  ButtonProps 
+  ButtonProps
 >(({ className, onClick, children: triggerChildren, asChild, ...otherProps }, ref) => {
   const { toggleSidebar } = useSidebar();
+  const Comp = asChild ? Slot : Button;
 
   return (
-    <Button 
+    <Comp
       ref={ref}
       data-sidebar="trigger"
       variant="ghost"
@@ -277,16 +278,15 @@ const SidebarTrigger = React.forwardRef<
         onClick?.(event);
         toggleSidebar();
       }}
-      asChild={asChild} 
-      {...otherProps}   
+      {...otherProps}
     >
-      {asChild ? triggerChildren : (
+      {triggerChildren || (
         <>
           <PanelLeft />
           <span className="sr-only">Toggle Sidebar</span>
         </>
       )}
-    </Button>
+    </Comp>
   );
 });
 SidebarTrigger.displayName = "SidebarTrigger"
@@ -557,8 +557,8 @@ const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonP
       size = "default",
       tooltip,
       className,
-      children, 
-      ...props 
+      children,
+      ...props
     },
     ref
   ) => {
@@ -587,22 +587,24 @@ const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonP
         </button>
       )
     }
-    
+
     if (!tooltip) {
       return buttonElement
     }
 
     const tooltipContentProps = typeof tooltip === 'string' ? { children: tooltip } : tooltip;
+    const showTooltipContent = state === "collapsed" && !isMobile;
 
     return (
       <Tooltip>
         <TooltipTrigger asChild>{buttonElement}</TooltipTrigger>
-        <TooltipContent
-          side="right"
-          align="center"
-          hidden={state !== "collapsed" || isMobile}
-          {...tooltipContentProps}
-        />
+        {showTooltipContent && (
+          <TooltipContent
+            side="right"
+            align="center"
+            {...tooltipContentProps}
+          />
+        )}
       </Tooltip>
     )
   }
@@ -729,7 +731,7 @@ const SidebarMenuSubButton = React.forwardRef<
     size?: "sm" | "md"
     isActive?: boolean
   }
->(({ asChild = false, size = "md", isActive, className, children, ...props }, ref) => { 
+>(({ asChild = false, size = "md", isActive, className, children, ...props }, ref) => {
   const Comp = asChild ? Slot : "a"
 
   return (
