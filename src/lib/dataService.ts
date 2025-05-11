@@ -18,6 +18,7 @@ let mockContent: AppContent = {
     { id: 'lm1', date: getTodayDateString(), title: 'Introduction to Algebra', content: 'Algebra is a branch of mathematics dealing with symbols and the rules for manipulating those symbols.' },
     { id: 'lm2', date: '2024-07-20', title: 'Understanding Photosynthesis', content: 'Photosynthesis is the process used by plants, algae and certain bacteria to harness energy from sunlight and turn it into chemical energy.' },
     { id: 'lm_2024_05_10', date: '2024-05-10', title: 'Basic Geometry: Shapes and Angles', content: "Geometry is the branch of mathematics concerned with the properties and relations of points, lines, surfaces, solids, and higher dimensional analogues. Today we'll focus on basic 2D shapes like triangles, squares, circles, and understanding different types of angles (acute, obtuse, right)." },
+    { id: 'lm_2025_05_10', date: '2025-05-10', title: 'Introduction to World Capitals', content: "Today, we will explore some of the major world capitals, their significance, and a few interesting facts about them. Capitals are often the political, economic, and cultural hearts of their nations.\n\nFor example:\n- Paris, France: Known for the Eiffel Tower and Louvre Museum.\n- Tokyo, Japan: A bustling metropolis blending tradition and modernity.\n- Ottawa, Canada: The political center of Canada, known for Parliament Hill.\n- Canberra, Australia: A planned city designed by Walter Burley Griffin.\n- Cairo, Egypt: Home to ancient wonders like the Pyramids of Giza and the Sphinx." },
   ],
   quizzes: [
     { 
@@ -51,6 +52,18 @@ let mockContent: AppContent = {
         createSampleQuestion('q_geo_3', 'An angle less than 90 degrees is called?', ['Obtuse angle', 'Right angle', 'Acute angle', 'Reflex angle'], 2, 'An acute angle is an angle that measures less than 90 degrees.'),
         createSampleQuestion('q_geo_4', 'What is the name of a shape with 4 equal sides and 4 right angles?', ['Rectangle', 'Rhombus', 'Square', 'Trapezoid'], 2, 'A square is a regular quadrilateral, which means that it has four equal sides and four equal angles (90-degree angles, or right angles).'),
         createSampleQuestion('q_geo_5', 'The distance around a circle is called its...?', ['Radius', 'Diameter', 'Area', 'Circumference'], 3, 'The circumference is the distance around the edge of a circle (or any curvy shape).'),
+      ]
+    },
+    { 
+      id: 'quiz_2025_05_10', 
+      date: '2025-05-10', 
+      title: 'World Capitals Quiz', 
+      questions: [
+        createSampleQuestion('q_cap_1', 'What is the capital of France?', ['Berlin', 'Madrid', 'Paris', 'Rome'], 2, 'Paris is the capital and most populous city of France, known for landmarks like the Eiffel Tower and the Louvre Museum.'),
+        createSampleQuestion('q_cap_2', 'Tokyo is the capital of which country?', ['China', 'South Korea', 'Japan', 'Thailand'], 2, 'Tokyo is the capital and largest city of Japan. It is a major global financial center and one of the most populous metropolitan areas in the world.'),
+        createSampleQuestion('q_cap_3', 'Which of these cities is the capital of Canada?', ['Toronto', 'Vancouver', 'Montreal', 'Ottawa'], 3, 'Ottawa, in the province of Ontario, is the capital of Canada. It was chosen by Queen Victoria in 1857.'),
+        createSampleQuestion('q_cap_4', 'What is the capital of Australia?', ['Sydney', 'Melbourne', 'Canberra', 'Perth'], 2, 'Canberra is the capital city of Australia. It was selected as the capital in 1908 as a compromise between rivals Sydney and Melbourne.'),
+        createSampleQuestion('q_cap_5', 'The capital of Egypt is?', ['Alexandria', 'Cairo', 'Giza', 'Luxor'], 1, 'Cairo is the capital of Egypt and the largest city in the Arab world. It is located near the Nile Delta.'),
       ]
     },
   ],
@@ -150,4 +163,5 @@ export const getAllQuizzes = async (): Promise<Quiz[]> => {
 export const getAllAnnouncements = async (): Promise<Announcement[]> => {
   return [...mockContent.announcements];
 }
+
 
