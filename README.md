@@ -2,6 +2,11 @@
 
 StudyQuest is a Next.js application designed as a daily learning companion. Users can access learning materials, take quizzes, and earn points. Administrators can manage content such as learning materials, quizzes, and announcements. The application also features GenAI capabilities for content generation (though not fully implemented in the current user-facing version).
 
+## Repository
+
+The source code for this project is hosted on GitHub at:
+[https://github.com/peter29ljf/knowledge](https://github.com/peter29ljf/knowledge)
+
 ## Features
 
 - **User Authentication:** Simple role-based login (User/Admin).
@@ -80,13 +85,14 @@ For a full list, see `package.json`.
 
 - Node.js (v18 or later recommended)
 - npm or yarn
+- Git
 
 ### Installation
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository-url>
-    cd <repository-name>
+    git clone https://github.com/peter29ljf/knowledge.git
+    cd knowledge
     ```
 
 2.  **Install dependencies:**
