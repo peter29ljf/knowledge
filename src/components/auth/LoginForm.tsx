@@ -139,6 +139,7 @@ export default function LoginForm() {
             type="button"
             onClick={togglePasswordVisibility}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (
               <EyeOffIcon className="h-5 w-5" />
@@ -147,11 +148,13 @@ export default function LoginForm() {
             )}
           </button>
         </div>
+        {/* 
         <p className="text-xs text-muted-foreground">
           {selectedRole === 'user' 
             ? '用户: yoyo(密码:100905) 或 lucas(密码:123123)' 
             : '管理员密码: 0987'} (演示用)
         </p>
+        */}
       </div>
 
       <Button type="submit" className="w-full text-lg py-6">
