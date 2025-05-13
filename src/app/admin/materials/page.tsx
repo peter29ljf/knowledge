@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { FileText, PlusCircle, Edit2, Trash2, CalendarIcon, Loader2, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -32,11 +32,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useSearchParams } from 'next/navigation';
 
 
 export default function AdminMaterialsPage() {
   const { learningMaterials, addLearningMaterial, fetchAllAdminContent, isLoading } = useAppData(); // Assuming update/delete will be added
   const { toast } = useToast();
+  const searchParams = useSearchParams();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentMaterial, setCurrentMaterial] = useState<Partial<LearningMaterial>>({});
@@ -54,6 +56,12 @@ export default function AdminMaterialsPage() {
     setMaterialsList(learningMaterials);
   }, [learningMaterials]);
 
+  // 检查URL参数是否要求打开添加材料模态窗口
+  useEffect(() => {
+    if (searchParams.get('action') === 'add') {
+      handleOpenModal();
+    }
+  }, [searchParams]);
 
   const handleOpenModal = (material?: LearningMaterial) => {
     if (material) {

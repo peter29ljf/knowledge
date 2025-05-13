@@ -15,7 +15,7 @@ import { Loader2, ListChecks, CalendarIcon, AlertTriangle, CheckCircle, XCircle,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const QUIZ_DURATION_MINUTES = 30; // Increased duration as feedback is per question
+const QUIZ_DURATION_MINUTES = 3; // 从30分钟改为3分钟
 
 interface QuestionFeedback {
   isCorrect: boolean | null;
@@ -115,7 +115,7 @@ export default function QuizPage() {
       pointsToAddToGlobalScore = 0; 
       quiz.questions.forEach((q, index) => {
         if (answers[index] === q.correctOptionIndex) {
-          pointsToAddToGlobalScore += (isToday && withinTime) ? 5 : 1;
+          pointsToAddToGlobalScore += (isToday && withinTime) ? 2 : 1;
         }
       });
     }

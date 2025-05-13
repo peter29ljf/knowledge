@@ -41,10 +41,14 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   const [learningMaterials, setLearningMaterials] = useState<LearningMaterial[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  
+  // 修改这里，使用一个键值，而不是直接在useLocalStorage中使用变量
+  const userScoreKey = `studyquest-userscore-${user?.id || 'guest'}`;
   const [userScore, setUserScore] = useLocalStorage<UserScoreData>(
-    `studyquest-userscore-${user?.id || 'guest'}`, 
+    userScoreKey, 
     { score: 0, quizAttempts: {} } // Default includes empty quizAttempts object
   );
+  
   const [adminMessages, setAdminMessages] = useLocalStorage<AdminMessage[]>('studyquest-adminmessages', []);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -73,21 +77,22 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     loadInitialData();
   }, [loadInitialData]);
   
-  useEffect(() => {
-    const newKey = `studyquest-userscore-${user?.id || 'guest'}`;
-    const storedData = localStorage.getItem(newKey);
-    if (storedData) {
-      try {
-        setUserScore(JSON.parse(storedData));
-      } catch (e) {
-        console.error("Failed to parse user score from localStorage", e);
-        setUserScore({ score: 0, quizAttempts: {} });
-      }
-    } else {
-      setUserScore({ score: 0, quizAttempts: {} });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, setUserScore]);
+  // 删除这个导致无限循环的useEffect
+  // useEffect(() => {
+  //   const newKey = `studyquest-userscore-${user?.id || 'guest'}`;
+  //   const storedData = localStorage.getItem(newKey);
+  //   if (storedData) {
+  //     try {
+  //       setUserScore(JSON.parse(storedData));
+  //     } catch (e) {
+  //       console.error("Failed to parse user score from localStorage", e);
+  //       setUserScore({ score: 0, quizAttempts: {} });
+  //     }
+  //   } else {
+  //     setUserScore({ score: 0, quizAttempts: {} });
+  //   }
+  // // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [user?.id, setUserScore]);
 
 
   const fetchLearningMaterial = useCallback(async (date: string): Promise<LearningMaterial | undefined> => {
