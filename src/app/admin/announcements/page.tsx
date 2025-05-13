@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Megaphone, PlusCircle, Edit2, Trash2, Loader2, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useSearchParams } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -35,6 +36,7 @@ import { Input } from '@/components/ui/input';
 export default function AdminAnnouncementsPage() {
   const { announcements, addAnnouncement, fetchAllAdminContent, isLoading } = useAppData();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentAnnouncement, setCurrentAnnouncement] = useState<Partial<Omit<Announcement, 'id' | 'publishedAt'>>>({});
@@ -53,6 +55,12 @@ export default function AdminAnnouncementsPage() {
     setAnnouncementsList([...announcements].sort((a, b) => b.publishedAt - a.publishedAt));
   }, [announcements]);
 
+  // 检查URL参数是否要求打开添加公告模态窗口
+  useEffect(() => {
+    if (searchParams.get('action') === 'add') {
+      handleOpenModal();
+    }
+  }, [searchParams]);
 
   const handleOpenModal = (announcement?: Announcement) => {
     if (announcement) {

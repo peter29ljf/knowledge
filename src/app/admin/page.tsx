@@ -107,13 +107,13 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
           <Button asChild variant="outline" className="w-full py-6 text-base">
-            <Link href="/admin/materials/new"><FileText className="mr-2 h-5 w-5"/> Add New Material</Link>
+            <Link href="/admin/materials?action=add"><FileText className="mr-2 h-5 w-5"/> Add New Material</Link>
           </Button>
           <Button asChild variant="outline" className="w-full py-6 text-base">
-            <Link href="/admin/quizzes/new"><ClipboardList className="mr-2 h-5 w-5"/> Add New Quiz</Link>
+            <Link href="/admin/quizzes?action=add"><ClipboardList className="mr-2 h-5 w-5"/> Add New Quiz</Link>
           </Button>
           <Button asChild variant="outline" className="w-full py-6 text-base">
-            <Link href="/admin/announcements/new"><Megaphone className="mr-2 h-5 w-5"/> Post Announcement</Link>
+            <Link href="/admin/announcements?action=add"><Megaphone className="mr-2 h-5 w-5"/> Post Announcement</Link>
           </Button>
         </CardContent>
       </Card>

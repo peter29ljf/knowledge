@@ -13,9 +13,10 @@ import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ClipboardList, PlusCircle, Edit2, Trash2, CalendarIcon, Loader2, Search, MessageCircleQuestion, ListOrdered, CheckSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useSearchParams } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -40,6 +41,7 @@ import {
 export default function AdminQuizzesPage() {
   const { quizzes, addQuiz, fetchAllAdminContent, isLoading } = useAppData();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentQuiz, setCurrentQuiz] = useState<Partial<Quiz>>({ questions: [] });
@@ -54,6 +56,12 @@ export default function AdminQuizzesPage() {
   useEffect(() => {
     setQuizzesList(quizzes);
   }, [quizzes]);
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'add') {
+      handleOpenModal();
+    }
+  }, [searchParams]);
 
   const handleOpenModal = (quiz?: Quiz) => {
     if (quiz) {

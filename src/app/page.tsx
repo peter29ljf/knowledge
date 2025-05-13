@@ -10,17 +10,35 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('HomePage useEffect - isLoading:', isLoading, 'user:', user);
+    
+    // 如果加载超过5秒仍然卡住，强制重定向到登录页
+    const timeoutId = setTimeout(() => {
+      console.log('导航超时，强制重定向到登录页面');
+      router.replace('/login');
+    }, 5000);
+
     if (!isLoading) {
-      if (user) {
-        if (user.role === 'admin') {
-          router.replace('/admin');
+      try {
+        if (user) {
+          if (user.role === 'admin') {
+            console.log('重定向到admin页面');
+            router.replace('/admin');
+          } else {
+            console.log('重定向到dashboard页面');
+            router.replace('/dashboard');
+          }
         } else {
-          router.replace('/dashboard');
+          console.log('重定向到login页面');
+          router.replace('/login');
         }
-      } else {
+      } catch (error) {
+        console.error('导航过程中出错:', error);
         router.replace('/login');
       }
     }
+    
+    return () => clearTimeout(timeoutId);
   }, [user, isLoading, router]);
 
   return (
