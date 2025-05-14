@@ -95,8 +95,8 @@ export default function AdminDashboardPage() {
           value={isLoading ? "..." : adminMessages.filter(m => !m.isRead).length}
           icon={Users}
           description="Unread messages from users"
-          // link="/admin/messages" Add this link when messages page is built
-          // linkText="View Messages"
+          link="/admin/messages"
+          linkText="View Messages"
         />
       </div>
 

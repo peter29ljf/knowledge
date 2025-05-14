@@ -13,12 +13,11 @@ const createSampleQuestion = (id: string, text: string, options: string[], corre
   explanation,
 });
 
-let mockContent: AppContent = {
+// 示例数据 - 仅用于展示，不会自动加载到系统中
+export const sampleContent: AppContent = {
   learningMaterials: [
     { id: 'lm1', date: getTodayDateString(), title: 'Introduction to Algebra', content: 'Algebra is a branch of mathematics dealing with symbols and the rules for manipulating those symbols.' },
     { id: 'lm2', date: '2024-07-20', title: 'Understanding Photosynthesis', content: 'Photosynthesis is the process used by plants, algae and certain bacteria to harness energy from sunlight and turn it into chemical energy.' },
-    { id: 'lm_2024_05_10', date: '2024-05-10', title: 'Basic Geometry: Shapes and Angles', content: "Geometry is the branch of mathematics concerned with the properties and relations of points, lines, surfaces, solids, and higher dimensional analogues. Today we'll focus on basic 2D shapes like triangles, squares, circles, and understanding different types of angles (acute, obtuse, right)." },
-    { id: 'lm_2025_05_10', date: '2025-05-10', title: 'Introduction to World Capitals', content: "Today, we will explore some of the major world capitals, their significance, and a few interesting facts about them. Capitals are often the political, economic, and cultural hearts of their nations.\n\nFor example:\n- Paris, France: Known for the Eiffel Tower and Louvre Museum.\n- Tokyo, Japan: A bustling metropolis blending tradition and modernity.\n- Ottawa, Canada: The political center of Canada, known for Parliament Hill.\n- Canberra, Australia: A planned city designed by Walter Burley Griffin.\n- Cairo, Egypt: Home to ancient wonders like the Pyramids of Giza and the Sphinx." },
   ],
   quizzes: [
     { 
@@ -28,140 +27,397 @@ let mockContent: AppContent = {
       questions: [
         createSampleQuestion('q1a', 'What is 2 + 2?', ['3', '4', '5', '6'], 1, 'The sum of 2 and 2 is 4.'),
         createSampleQuestion('q1b', 'Solve for x: x + 5 = 10', ['3', '4', '5', '10'], 2, 'Subtract 5 from both sides: x = 10 - 5, so x = 5.'),
-        createSampleQuestion('q1c', 'What is 3 * 3?', ['6', '9', '12', '33'], 1, '3 multiplied by 3 is 9.'),
-        createSampleQuestion('q1d', 'Is 7 a prime number?', ['Yes', 'No'], 0, 'A prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself. 7 fits this definition.'),
-        createSampleQuestion('q1e', 'What is the square root of 16?', ['2', '4', '8', '16'], 1, 'The square root of 16 is 4, because 4 * 4 = 16.'),
       ]
-    },
-    { 
-      id: 'quiz2', 
-      date: '2024-07-20', 
-      title: 'Photosynthesis Basics', 
-      questions: [
-        createSampleQuestion('q2a', 'What gas do plants absorb during photosynthesis?', ['Oxygen', 'Carbon Dioxide', 'Nitrogen'], 1, 'Plants absorb Carbon Dioxide (CO2) for photosynthesis.'),
-        createSampleQuestion('q2b', 'What is the primary pigment used in photosynthesis?', ['Chlorophyll', 'Carotene', 'Xanthophyll'], 0, 'Chlorophyll is the primary pigment that captures light energy.'),
-      ]
-    },
-     { 
-      id: 'quiz_2024_05_10', 
-      date: '2024-05-10', 
-      title: 'Daily Geometry Challenge', 
-      questions: [
-        createSampleQuestion('q_geo_1', 'How many sides does a triangle have?', ['2', '3', '4', '5'], 1, 'A triangle is a polygon with three edges and three vertices.'),
-        createSampleQuestion('q_geo_2', 'What is the sum of angles in a triangle?', ['90 degrees', '180 degrees', '270 degrees', '360 degrees'], 1, 'The sum of the interior angles of a triangle always adds up to 180 degrees.'),
-        createSampleQuestion('q_geo_3', 'An angle less than 90 degrees is called?', ['Obtuse angle', 'Right angle', 'Acute angle', 'Reflex angle'], 2, 'An acute angle is an angle that measures less than 90 degrees.'),
-        createSampleQuestion('q_geo_4', 'What is the name of a shape with 4 equal sides and 4 right angles?', ['Rectangle', 'Rhombus', 'Square', 'Trapezoid'], 2, 'A square is a regular quadrilateral, which means that it has four equal sides and four equal angles (90-degree angles, or right angles).'),
-        createSampleQuestion('q_geo_5', 'The distance around a circle is called its...?', ['Radius', 'Diameter', 'Area', 'Circumference'], 3, 'The circumference is the distance around the edge of a circle (or any curvy shape).'),
-      ]
-    },
-    { 
-      id: 'quiz_2025_05_10', 
-      date: '2025-05-10', 
-      title: 'World Capitals Quiz', 
-      questions: [
-        createSampleQuestion('q_cap_1', 'What is the capital of France?', ['Berlin', 'Madrid', 'Paris', 'Rome'], 2, 'Paris is the capital and most populous city of France, known for landmarks like the Eiffel Tower and the Louvre Museum.'),
-        createSampleQuestion('q_cap_2', 'Tokyo is the capital of which country?', ['China', 'South Korea', 'Japan', 'Thailand'], 2, 'Tokyo is the capital and largest city of Japan. It is a major global financial center and one of the most populous metropolitan areas in the world.'),
-        createSampleQuestion('q_cap_3', 'Which of these cities is the capital of Canada?', ['Toronto', 'Vancouver', 'Montreal', 'Ottawa'], 3, 'Ottawa, in the province of Ontario, is the capital of Canada. It was chosen by Queen Victoria in 1857.'),
-        createSampleQuestion('q_cap_4', 'What is the capital of Australia?', ['Sydney', 'Melbourne', 'Canberra', 'Perth'], 2, 'Canberra is the capital city of Australia. It was selected as the capital in 1908 as a compromise between rivals Sydney and Melbourne.'),
-        createSampleQuestion('q_cap_5', 'The capital of Egypt is?', ['Alexandria', 'Cairo', 'Giza', 'Luxor'], 1, 'Cairo is the capital of Egypt and the largest city in the Arab world. It is located near the Nile Delta.'),
-      ]
-    },
+    }
   ],
   announcements: [
     { id: 'an1', date: getTodayDateString(), message: 'Welcome to StudyQuest! New materials are posted daily.', publishedAt: Date.now() - 3600000 },
-    { id: 'an2', date: '2024-07-20', message: 'Mid-term review session next week.', publishedAt: Date.now() - 86400000 },
   ],
 };
 
-// Simulate API calls
+// 空内容 - 应用程序默认启动状态
+export const emptyContent: AppContent = {
+  learningMaterials: [],
+  quizzes: [],
+  announcements: []
+};
+
+// 内存存储 - 初始为空
+let memoryStore: AppContent = {...emptyContent};
+
+// 数据本地存储键名
+const STORAGE_KEYS = {
+  MATERIALS: 'studyquest-materials',
+  QUIZZES: 'studyquest-quizzes',
+  ANNOUNCEMENTS: 'studyquest-announcements'
+};
+
+// 辅助函数：从localStorage获取数据
+const getFromStorage = <T>(key: string, defaultValue: T): T => {
+  if (typeof window === 'undefined') {
+    return defaultValue; // 服务器端渲染时返回默认值
+  }
+  
+  try {
+    const storedValue = localStorage.getItem(key);
+    if (!storedValue) return defaultValue;
+    
+    return JSON.parse(storedValue) as T;
+  } catch (error) {
+    console.error(`从本地存储获取${key}时出错:`, error);
+    return defaultValue;
+  }
+};
+
+// 辅助函数：保存数据到localStorage
+const saveToStorage = <T>(key: string, value: T): void => {
+  if (typeof window === 'undefined') {
+    return; // 服务器端渲染时不执行
+  }
+  
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`保存到本地存储${key}时出错:`, error);
+  }
+};
+
+// 初始化数据存储 - 仅从localStorage加载，不添加模板数据
+export const initializeDataStore = async (): Promise<void> => {
+  if (typeof window === 'undefined') {
+    return; // 服务器端不进行本地存储初始化
+  }
+  
+  try {
+    // 从本地存储加载数据（如果有）
+    memoryStore = {
+      learningMaterials: getFromStorage(STORAGE_KEYS.MATERIALS, []),
+      quizzes: getFromStorage(STORAGE_KEYS.QUIZZES, []),
+      announcements: getFromStorage(STORAGE_KEYS.ANNOUNCEMENTS, [])
+    };
+    
+    console.log('数据存储已初始化', {
+      materialsCount: memoryStore.learningMaterials.length,
+      quizzesCount: memoryStore.quizzes.length,
+      announcementsCount: memoryStore.announcements.length
+    });
+  } catch (error) {
+    console.error('初始化数据存储时出错:', error);
+    // 出错时使用空内容
+    memoryStore = {...emptyContent};
+  }
+};
+
+// 学习材料相关操作
 export const getLearningMaterialByDate = async (date: string): Promise<LearningMaterial | undefined> => {
-  return mockContent.learningMaterials.find(material => material.date === date);
+  const materials = await getAllLearningMaterials();
+  return materials.find(material => material.date === date);
 };
 
 export const getQuizByDate = async (date: string): Promise<Quiz | undefined> => {
-  return mockContent.quizzes.find(quiz => quiz.date === date);
+  const quizzes = await getAllQuizzes();
+  return quizzes.find(quiz => quiz.date === date);
 };
 
 export const getAnnouncements = async (limit: number = 5): Promise<Announcement[]> => {
-  return [...mockContent.announcements].sort((a,b) => b.publishedAt - a.publishedAt).slice(0, limit);
+  const announcements = await getAllAnnouncements();
+  return [...announcements].sort((a,b) => b.publishedAt - a.publishedAt).slice(0, limit);
 };
 
-// Admin functions to modify mock data
+// 管理员功能：修改数据
 export const addLearningMaterial = async (material: Omit<LearningMaterial, 'id'>): Promise<LearningMaterial> => {
   const newMaterial: LearningMaterial = { ...material, id: `lm${Date.now()}` };
-  mockContent.learningMaterials.push(newMaterial);
+  
+  // 更新内存存储
+  const updatedMaterials = [...memoryStore.learningMaterials, newMaterial];
+  memoryStore.learningMaterials = updatedMaterials;
+  
+  // 更新本地存储
+  saveToStorage(STORAGE_KEYS.MATERIALS, updatedMaterials);
+  
+  console.log('添加了新材料', newMaterial.title);
   return newMaterial;
 };
 
 export const updateLearningMaterial = async (updatedMaterial: LearningMaterial): Promise<LearningMaterial | undefined> => {
-  const index = mockContent.learningMaterials.findIndex(m => m.id === updatedMaterial.id);
-  if (index !== -1) {
-    mockContent.learningMaterials[index] = updatedMaterial;
+  // 检查材料是否存在
+  const materialIndex = memoryStore.learningMaterials.findIndex(m => m.id === updatedMaterial.id);
+  
+  if (materialIndex >= 0) {
+    // 更新内存存储
+    const updatedMaterials = [...memoryStore.learningMaterials];
+    updatedMaterials[materialIndex] = updatedMaterial;
+    memoryStore.learningMaterials = updatedMaterials;
+    
+    // 更新本地存储
+    saveToStorage(STORAGE_KEYS.MATERIALS, updatedMaterials);
+    
+    console.log('更新了材料', updatedMaterial.title);
     return updatedMaterial;
   }
   return undefined;
 };
 
+export const deleteLearningMaterial = async (materialId: string): Promise<boolean> => {
+  try {
+    // 更新内存存储
+    const initialLength = memoryStore.learningMaterials.length;
+    const updatedMaterials = memoryStore.learningMaterials.filter(m => m.id !== materialId);
+    memoryStore.learningMaterials = updatedMaterials;
+    
+    // 更新本地存储
+    saveToStorage(STORAGE_KEYS.MATERIALS, updatedMaterials);
+    
+    const deleted = updatedMaterials.length < initialLength;
+    if (deleted) {
+      console.log('删除了材料', materialId);
+    }
+    return deleted;
+  } catch (error) {
+    console.error(`删除学习材料 ${materialId} 时出错:`, error);
+    return false;
+  }
+};
+
 export const addQuiz = async (quiz: Omit<Quiz, 'id'>): Promise<Quiz> => {
   const newQuiz: Quiz = { ...quiz, id: `quiz${Date.now()}` };
-  mockContent.quizzes.push(newQuiz);
+  
+  // 更新内存存储
+  const updatedQuizzes = [...memoryStore.quizzes, newQuiz];
+  memoryStore.quizzes = updatedQuizzes;
+  
+  // 更新本地存储
+  saveToStorage(STORAGE_KEYS.QUIZZES, updatedQuizzes);
+  
+  console.log('添加了新测验', newQuiz.title);
   return newQuiz;
 };
 
 export const updateQuiz = async (updatedQuiz: Quiz): Promise<Quiz | undefined> => {
-  const index = mockContent.quizzes.findIndex(q => q.id === updatedQuiz.id);
-  if (index !== -1) {
-    mockContent.quizzes[index] = updatedQuiz;
+  // 检查测验是否存在
+  const quizIndex = memoryStore.quizzes.findIndex(q => q.id === updatedQuiz.id);
+  
+  if (quizIndex >= 0) {
+    // 更新内存存储
+    const updatedQuizzes = [...memoryStore.quizzes];
+    updatedQuizzes[quizIndex] = updatedQuiz;
+    memoryStore.quizzes = updatedQuizzes;
+    
+    // 更新本地存储
+    saveToStorage(STORAGE_KEYS.QUIZZES, updatedQuizzes);
+    
+    console.log('更新了测验', updatedQuiz.title);
     return updatedQuiz;
   }
   return undefined;
 };
 
+export const deleteQuiz = async (quizId: string): Promise<boolean> => {
+  try {
+    // 更新内存存储
+    const initialLength = memoryStore.quizzes.length;
+    const updatedQuizzes = memoryStore.quizzes.filter(q => q.id !== quizId);
+    memoryStore.quizzes = updatedQuizzes;
+    
+    // 更新本地存储
+    saveToStorage(STORAGE_KEYS.QUIZZES, updatedQuizzes);
+    
+    const deleted = updatedQuizzes.length < initialLength;
+    if (deleted) {
+      console.log('删除了测验', quizId);
+    }
+    return deleted;
+  } catch (error) {
+    console.error(`删除测验 ${quizId} 时出错:`, error);
+    return false;
+  }
+};
+
 export const addAnnouncement = async (announcement: Omit<Announcement, 'id' | 'publishedAt'>): Promise<Announcement> => {
-  const newAnnouncement: Announcement = { ...announcement, id: `an${Date.now()}`, publishedAt: Date.now() };
-  mockContent.announcements.unshift(newAnnouncement); // Add to the beginning
+  const newAnnouncement: Announcement = { 
+    ...announcement, 
+    id: `an${Date.now()}`, 
+    publishedAt: Date.now() 
+  };
+  
+  // 更新内存存储
+  const updatedAnnouncements = [...memoryStore.announcements, newAnnouncement];
+  memoryStore.announcements = updatedAnnouncements;
+  
+  // 更新本地存储
+  saveToStorage(STORAGE_KEYS.ANNOUNCEMENTS, updatedAnnouncements);
+  
+  console.log('添加了新公告', newAnnouncement.message.substring(0, 30) + (newAnnouncement.message.length > 30 ? '...' : ''));
   return newAnnouncement;
 };
 
-// For Webhook updates - this is a simplified version
-export const updateDailyContentViaWebhook = async (data: { date: string, material?: Partial<LearningMaterial>, quiz?: Partial<Quiz> }): Promise<boolean> => {
-  const { date, material, quiz } = data;
+export const deleteAnnouncement = async (announcementId: string): Promise<boolean> => {
+  try {
+    // 更新内存存储
+    const initialLength = memoryStore.announcements.length;
+    const updatedAnnouncements = memoryStore.announcements.filter(a => a.id !== announcementId);
+    memoryStore.announcements = updatedAnnouncements;
+    
+    // 更新本地存储
+    saveToStorage(STORAGE_KEYS.ANNOUNCEMENTS, updatedAnnouncements);
+    
+    const deleted = updatedAnnouncements.length < initialLength;
+    if (deleted) {
+      console.log('删除了公告', announcementId);
+    }
+    return deleted;
+  } catch (error) {
+    console.error(`删除公告 ${announcementId} 时出错:`, error);
+    return false;
+  }
+};
+
+export const updateAnnouncement = async (updatedAnnouncement: Announcement): Promise<Announcement | undefined> => {
+  // 检查公告是否存在
+  const announcementIndex = memoryStore.announcements.findIndex(a => a.id === updatedAnnouncement.id);
+  
+  if (announcementIndex >= 0) {
+    // 更新内存存储
+    const updatedAnnouncements = [...memoryStore.announcements];
+    updatedAnnouncements[announcementIndex] = updatedAnnouncement;
+    memoryStore.announcements = updatedAnnouncements;
+    
+    // 更新本地存储
+    saveToStorage(STORAGE_KEYS.ANNOUNCEMENTS, updatedAnnouncements);
+    
+    console.log('更新了公告', updatedAnnouncement.message.substring(0, 30) + (updatedAnnouncement.message.length > 30 ? '...' : ''));
+    return updatedAnnouncement;
+  }
+  return undefined;
+};
+
+// Webhook更新函数
+export const updateDailyContentViaWebhook = async (data: { date: string, material?: Partial<LearningMaterial>, quiz?: Partial<Quiz>, announcement?: Partial<Announcement> }): Promise<boolean> => {
+  const { date, material, quiz, announcement } = data;
   let materialUpdated = false;
   let quizUpdated = false;
+  let announcementUpdated = false;
 
+  // 处理学习材料更新
   if (material) {
-    let existingMaterial = mockContent.learningMaterials.find(m => m.date === date);
-    if (existingMaterial) {
-      Object.assign(existingMaterial, material);
-    } else {
-      mockContent.learningMaterials.push({ id: `lm-wh-${Date.now()}`, date, title: 'New Material', content: 'Webhook content', ...material });
+    const existingMaterialIndex = memoryStore.learningMaterials.findIndex(m => m.date === date);
+    
+    if (existingMaterialIndex >= 0) {
+      // 更新现有材料
+      const updatedMaterials = [...memoryStore.learningMaterials];
+      updatedMaterials[existingMaterialIndex] = { 
+        ...updatedMaterials[existingMaterialIndex], 
+        ...material 
+      };
+      memoryStore.learningMaterials = updatedMaterials;
+      saveToStorage(STORAGE_KEYS.MATERIALS, updatedMaterials);
+    } else if (material.title && material.content) {
+      // 创建新材料 (确保有必要字段)
+      const newMaterial: LearningMaterial = { 
+        id: `lm-wh-${Date.now()}`, 
+        date, 
+        title: material.title, 
+        content: material.content
+      };
+      const updatedMaterials = [...memoryStore.learningMaterials, newMaterial];
+      memoryStore.learningMaterials = updatedMaterials;
+      saveToStorage(STORAGE_KEYS.MATERIALS, updatedMaterials);
     }
     materialUpdated = true;
   }
 
+  // 处理测验更新
   if (quiz) {
-    let existingQuiz = mockContent.quizzes.find(q => q.date === date);
-    if (existingQuiz) {
-      Object.assign(existingQuiz, quiz);
-    } else {
-      mockContent.quizzes.push({ id: `quiz-wh-${Date.now()}`, date, title: 'New Quiz', questions: [], ...quiz });
+    const existingQuizIndex = memoryStore.quizzes.findIndex(q => q.date === date);
+    
+    if (existingQuizIndex >= 0) {
+      // 更新现有测验
+      const updatedQuizzes = [...memoryStore.quizzes];
+      updatedQuizzes[existingQuizIndex] = { 
+        ...updatedQuizzes[existingQuizIndex], 
+        ...quiz 
+      };
+      memoryStore.quizzes = updatedQuizzes;
+      saveToStorage(STORAGE_KEYS.QUIZZES, updatedQuizzes);
+    } else if (quiz.questions && quiz.title) {
+      // 创建新测验 (确保有必要字段)
+      const newQuiz: Quiz = { 
+        id: `quiz-wh-${Date.now()}`, 
+        date, 
+        title: quiz.title, 
+        questions: quiz.questions
+      };
+      const updatedQuizzes = [...memoryStore.quizzes, newQuiz];
+      memoryStore.quizzes = updatedQuizzes;
+      saveToStorage(STORAGE_KEYS.QUIZZES, updatedQuizzes);
     }
     quizUpdated = true;
   }
-  console.log("Webhook processed. Mock data updated:", mockContent);
-  return materialUpdated || quizUpdated;
+  
+  // 处理公告更新
+  if (announcement && announcement.message) {
+    const newAnnouncement: Announcement = {
+      id: `an-wh-${Date.now()}`,
+      date,
+      message: announcement.message,
+      publishedAt: Date.now()
+    };
+    const updatedAnnouncements = [...memoryStore.announcements, newAnnouncement];
+    memoryStore.announcements = updatedAnnouncements;
+    saveToStorage(STORAGE_KEYS.ANNOUNCEMENTS, updatedAnnouncements);
+    announcementUpdated = true;
+  }
+  
+  console.log("Webhook处理完成。内容已更新。");
+  return materialUpdated || quizUpdated || announcementUpdated;
 };
 
+// 获取所有数据的函数
 export const getAllLearningMaterials = async (): Promise<LearningMaterial[]> => {
-  return [...mockContent.learningMaterials];
+  // 如果内存中无数据，尝试从本地存储加载
+  if (memoryStore.learningMaterials.length === 0 && typeof window !== 'undefined') {
+    memoryStore.learningMaterials = getFromStorage(STORAGE_KEYS.MATERIALS, []);
+  }
+  return [...memoryStore.learningMaterials];
 }
 
 export const getAllQuizzes = async (): Promise<Quiz[]> => {
-  return [...mockContent.quizzes];
+  // 如果内存中无数据，尝试从本地存储加载
+  if (memoryStore.quizzes.length === 0 && typeof window !== 'undefined') {
+    memoryStore.quizzes = getFromStorage(STORAGE_KEYS.QUIZZES, []);
+  }
+  return [...memoryStore.quizzes];
 }
 
 export const getAllAnnouncements = async (): Promise<Announcement[]> => {
-  return [...mockContent.announcements];
+  // 如果内存中无数据，尝试从本地存储加载
+  if (memoryStore.announcements.length === 0 && typeof window !== 'undefined') {
+    memoryStore.announcements = getFromStorage(STORAGE_KEYS.ANNOUNCEMENTS, []);
+  }
+  return [...memoryStore.announcements];
 }
+
+// 清除所有数据，重置为空状态
+export const clearAllData = async (): Promise<boolean> => {
+  if (typeof window === 'undefined') {
+    return false; // 服务器端不执行
+  }
+  
+  try {
+    // 清除内存数据
+    memoryStore = {...emptyContent};
+    
+    // 清除本地存储
+    localStorage.removeItem(STORAGE_KEYS.MATERIALS);
+    localStorage.removeItem(STORAGE_KEYS.QUIZZES);
+    localStorage.removeItem(STORAGE_KEYS.ANNOUNCEMENTS);
+    
+    console.log('所有数据已清除');
+    return true;
+  } catch (error) {
+    console.error('清除数据时出错:', error);
+    return false;
+  }
+};
 
 
