@@ -1,203 +1,218 @@
-# Firebase Studio - StudyQuest
+# StudyQuest 学习平台
 
-StudyQuest is a Next.js application designed as a daily learning companion. Users can access learning materials, take quizzes, and earn points. Administrators can manage content such as learning materials, quizzes, and announcements. The application also features GenAI capabilities for content generation (though not fully implemented in the current user-facing version).
+StudyQuest是一个基于Next.js开发的日常学习伴侣应用。用户可以访问学习材料、参与测验并获取积分。管理员可以管理学习内容、测验和公告。该应用程序还具有GenAI功能，用于内容生成（尽管在当前用户界面版本中尚未完全实现）。
 
-## Repository
+## 版本
 
-The source code for this project is hosted on GitHub at:
-[https://github.com/peter29ljf/knowledge](https://github.com/peter29ljf/knowledge)
+**当前版本：v0.0.5**
 
-## Features
+## 主要功能
 
-- **User Authentication:** Simple role-based login (User/Admin).
-- **Dashboard:** Personalized welcome, date display, user score, and admin announcements.
-- **Learning Materials:** Daily content accessible by date.
-- **Quizzes:** Daily quizzes with immediate feedback and scoring.
-- **Admin Panel:**
-    - Manage Learning Materials (Add/Edit/Delete - Edit/Delete are UI only for now).
-    - Manage Quizzes (Add/Edit/Delete - Edit/Delete are UI only for now).
-    - Manage Announcements (Add/Delete - Delete is UI only for now).
-    - View user messages (basic implementation).
-- **Responsive Design:** Adapts to different screen sizes.
-- **Styling:** Uses ShadCN UI components and Tailwind CSS.
-- **GenAI Integration (Backend):** Uses Genkit for potential AI-powered features (e.g., content generation, though specific flows are not yet exposed in UI).
+- **用户认证：** 基于角色的登录（用户/管理员），支持密码验证
+- **仪表盘：** 个性化欢迎界面、日期显示、用户积分和管理员公告
+- **学习材料：** 按日期访问的每日内容
+- **测验：** 每日测验，提供即时反馈和积分
+- **管理员面板：**
+  - 管理学习材料（添加/编辑/删除）
+  - 管理测验（添加/编辑/删除）
+  - 管理公告（添加/删除）
+  - 查看用户消息
+- **响应式设计：** 适应不同屏幕尺寸
+- **样式：** 使用ShadCN UI组件和Tailwind CSS
+- **GenAI集成：** 使用Genkit提供AI驱动功能（如内容生成）
 
-## File Structure
+## 版本更新内容
 
-The project follows a standard Next.js App Router structure:
+### v0.0.5
+- 添加密码登录功能，提高安全性
+- 用户默认凭据：用户"yoyo"（密码"100905"）、"lucas"（密码"123123"）
+- 管理员默认密码："0987"
+- 重构数据服务架构，改用API路由方式处理数据
+- 修复服务端渲染问题，解决fs模块在客户端使用的错误
+- 界面文本翻译为中文，提升用户体验
+- 修复管理员面板Quick Actions按钮404错误
+- 解决无限循环更新问题
+- 修复水合错误和parseISO未定义错误
+
+## 文件结构
+
+项目遵循标准的Next.js App Router结构：
 
 ```
 .
-├── public/                 # Static assets
+├── data/                  # 数据存储目录
+│   ├── public/            # 公共数据（学习材料、测验、公告）
+│   ├── system/            # 系统数据（配置、用户注册表）
+│   └── users/             # 用户数据（个人资料、测验记录、消息）
+├── public/                # 静态资源
 ├── src/
-│   ├── ai/                 # Genkit AI flows and configuration
-│   │   ├── flows/          # Genkit flow definitions (if any were added)
-│   │   ├── dev.ts          # Genkit development server entry point
-│   │   └── genkit.ts       # Genkit global AI object initialization
-│   ├── app/                # Next.js App Router
-│   │   ├── (app)/          # Authenticated user routes (dashboard, learning, quiz)
+│   ├── ai/                # GenKit AI流程和配置
+│   │   ├── flows/         # GenKit流程定义
+│   │   ├── dev.ts         # GenKit开发服务器入口
+│   │   └── genkit.ts      # GenKit全局AI对象初始化
+│   ├── app/               # Next.js App Router
+│   │   ├── (app)/         # 已认证用户路由（仪表盘、学习、测验）
 │   │   │   ├── dashboard/
 │   │   │   ├── learning/
 │   │   │   └── quiz/
-│   │   ├── (auth)/         # Authentication routes (login)
+│   │   ├── (auth)/        # 认证路由（登录）
 │   │   │   └── login/
-│   │   ├── admin/          # Admin panel routes
+│   │   ├── admin/         # 管理员面板路由
 │   │   │   ├── announcements/
 │   │   │   ├── materials/
+│   │   │   ├── messages/
 │   │   │   └── quizzes/
-│   │   ├── api/            # API routes (e.g., webhook)
-│   │   ├── globals.css     # Global styles and ShadCN theme
-│   │   ├── layout.tsx      # Root layout
-│   │   └── page.tsx        # Root page (handles initial redirection)
-│   ├── components/         # React components
-│   │   ├── auth/           # Authentication related components
-│   │   ├── dashboard/      # Dashboard specific components
-│   │   └── ui/             # ShadCN UI components
-│   ├── contexts/           # React context providers (Auth, AppData)
-│   ├── hooks/              # Custom React hooks (useLocalStorage, useMobile, useToast)
-│   ├── lib/                # Utility functions and type definitions
-│   │   ├── dataService.ts  # Mock data service
-│   │   └── types.ts        # TypeScript type definitions
-│   │   └── utils.ts        # ShadCN utility functions
-├── components.json         # ShadCN UI configuration
-├── next.config.ts          # Next.js configuration
-├── package.json            # Project dependencies and scripts
-├── tailwind.config.ts      # Tailwind CSS configuration
-└── tsconfig.json           # TypeScript configuration
-└── README.md               # This file
+│   │   ├── api/           # API路由
+│   │   │   ├── data/      # 数据API（学习材料、测验、公告等）
+│   │   │   ├── init/      # 初始化API
+│   │   │   └── webhook/   # Webhook API
+│   │   ├── globals.css    # 全局样式和ShadCN主题
+│   │   ├── layout.tsx     # 根布局
+│   │   └── page.tsx       # 根页面（处理初始重定向）
+│   ├── components/        # React组件
+│   │   ├── admin/         # 管理员相关组件
+│   │   ├── auth/          # 认证相关组件
+│   │   ├── dashboard/     # 仪表盘特定组件
+│   │   ├── learning/      # 学习相关组件
+│   │   ├── quiz/          # 测验相关组件
+│   │   └── ui/            # ShadCN UI组件
+│   ├── contexts/          # React上下文提供程序（Auth, AppData）
+│   ├── hooks/             # 自定义React钩子
+│   └── lib/               # 工具函数和类型定义
+│       ├── dataService.ts # 数据服务（通过API路由）
+│       ├── initData.ts    # 数据初始化
+│       ├── types.ts       # TypeScript类型定义
+│       └── utils.ts       # ShadCN工具函数
+├── components.json        # ShadCN UI配置
+├── next.config.ts         # Next.js配置
+├── package.json           # 项目依赖和脚本
+├── tailwind.config.ts     # Tailwind CSS配置
+└── tsconfig.json          # TypeScript配置
 ```
 
-## Key Dependencies
+## 关键依赖
 
-- **Framework:** Next.js (@latest)
-- **UI Components:** ShadCN UI, Radix UI primitives, Lucide React (icons)
-- **Styling:** Tailwind CSS
-- **State Management:** React Context API, `react-hook-form`
-- **GenAI:** Genkit, @genkit-ai/googleai
-- **Utilities:** date-fns, Zod (for schema validation, primarily in Genkit)
-- **Data Persistence (Mock):** LocalStorage (`useLocalStorage` hook), in-memory `dataService.ts`
+- **框架：** Next.js (@latest)
+- **UI组件：** ShadCN UI, Radix UI primitives, Lucide React (图标)
+- **样式：** Tailwind CSS
+- **状态管理：** React Context API, `react-hook-form`
+- **GenAI：** Genkit, @genkit-ai/googleai
+- **工具：** date-fns, Zod (用于模式验证，主要在Genkit中)
+- **数据持久化：** 本地存储 (`useLocalStorage` 钩子), API路由操作文件系统
 
-For a full list, see `package.json`.
+## 开始使用
 
-## Getting Started
+### 前置条件
 
-### Prerequisites
-
-- Node.js (v18 or later recommended)
-- npm or yarn
+- Node.js (v18或更高版本)
+- npm或yarn
 - Git
 
-### Installation
+### 安装
 
-1.  **Clone the repository:**
+1.  **克隆仓库：**
     ```bash
-    git clone https://github.com/peter29ljf/knowledge.git
-    cd knowledge
+    git clone https://github.com/yourusername/studyquest.git
+    cd studyquest
     ```
 
-2.  **Install dependencies:**
+2.  **安装依赖：**
     ```bash
     npm install
-    # or
+    # 或
     yarn install
     ```
 
-### Environment Variables (Optional)
+### 环境变量（可选）
 
-If you plan to use Google AI with Genkit and have specific API keys, you might need to set them up. Genkit typically looks for `GOOGLE_API_KEY` or uses application default credentials. For this project's current mock setup, no specific GenAI environment variables are strictly required for basic operation unless you extend the GenAI functionalities.
+如果计划使用带有Genkit的Google AI并有特定的API密钥，可能需要设置它们。Genkit通常寻找`GOOGLE_API_KEY`或使用应用程序默认凭据。对于此项目的当前模拟设置，除非扩展GenAI功能，否则基本操作不需要特定的GenAI环境变量。
 
-Create a `.env.local` file in the root of your project if needed:
+如有需要，在项目根目录创建一个`.env.local`文件：
 ```env
 GOOGLE_API_KEY=your_google_api_key_here
 ```
-(Note: The current `src/ai/genkit.ts` initializes GoogleAI plugin without explicit API key, relying on ADC or environment variables if set.)
+（注意：当前的`src/ai/genkit.ts`初始化GoogleAI插件时没有明确的API密钥，依赖于ADC或已设置的环境变量。）
 
+## 使用方法
 
-## Usage
+### 运行开发服务器
 
-### Running the Development Server
-
-To start the Next.js development server:
+要启动Next.js开发服务器：
 
 ```bash
 npm run dev
-# or
+# 或
 yarn dev
 ```
-This will typically start the application on `http://localhost:9002`.
+这通常会在`http://localhost:9003`上启动应用程序。
 
-### Running Genkit Development Server (Optional)
+### 运行Genkit开发服务器（可选）
 
-If you are working with Genkit flows and want to inspect or test them separately (though none are user-facing in the current version):
+如果你正在使用Genkit流程并希望单独检查或测试它们（尽管在当前版本中没有面向用户的流程）：
 
 ```bash
 npm run genkit:dev
-# or to watch for changes
+# 或监视更改
 npm run genkit:watch
 ```
-This will start the Genkit development UI, usually on `http://localhost:4000`.
+这将启动Genkit开发UI，通常在`http://localhost:4000`上。
 
-### Building for Production
+### 构建生产版本
 
-To create a production build:
+要创建生产构建：
 
 ```bash
 npm run build
-# or
+# 或
 yarn build
 ```
 
-### Starting the Production Server
+### 启动生产服务器
 
-After building, to start the production server:
+构建后，启动生产服务器：
 
 ```bash
 npm run start
-# or
+# 或
 yarn start
 ```
 
-## Project Structure Details
+## 项目架构详情
 
--   **`src/app`**: Contains all routes, layouts, and pages.
-    -   **`(app)` group**: For routes accessible after user login (e.g., `/dashboard`, `/learning`).
-    -   **`(auth)` group**: For authentication-related routes (e.g., `/login`).
-    -   **`admin` group**: For administrator-specific routes and functionalities.
-    -   **`api` group**: For backend API endpoints.
--   **`src/components`**: Reusable UI components.
-    -   **`ui`**: Auto-generated components from ShadCN.
--   **`src/contexts`**: Global state management using React Context.
-    -   `AuthContext.tsx`: Manages user authentication state.
-    -   `AppDataContext.tsx`: Manages application data like learning materials, quizzes, user scores.
--   **`src/hooks`**: Custom React hooks for shared logic.
--   **`src/lib`**: Core logic, type definitions, and utility functions.
-    -   `dataService.ts`: Simulates a backend by providing and managing mock data. In a real application, this would interact with a database.
-    -   `types.ts`: TypeScript interfaces for data structures.
--   **`src/ai`**: Genkit related code.
-    -   `genkit.ts`: Initializes and configures the Genkit AI object.
-    -   `dev.ts`: Entry point for the Genkit development server, typically imports flows to make them available.
+### 应用架构
 
-## Styling
+- **前端UI**：使用Next.js App Router实现，路由分组包括(app)、(auth)和admin
+- **数据服务**：通过API路由操作服务器端文件系统
+- **状态管理**：使用React Context API管理全局状态
+- **认证**：简单的角色和密码验证机制
 
--   The project uses **Tailwind CSS** for utility-first styling.
--   **ShadCN UI** is used for pre-built, accessible components.
--   The base theme (colors, radius, etc.) is configured in `src/app/globals.css` using CSS variables, following ShadCN's theming approach.
+### 数据处理
 
-## Data Handling
+- **客户端数据（用户配置文件、分数）：** 使用`useLocalStorage`钩子持久化在LocalStorage中
+- **应用内容（学习材料、测验、公告）：** 通过API路由在服务器端读写JSON文件
+- **文件存储结构：** 数据存储在`data`目录下，分为`public`（公共数据）、`system`（系统数据）和`users`（用户数据）
 
--   **Client-side data (User profile, Score):** Persisted in LocalStorage using the `useLocalStorage` hook.
--   **Application Content (Learning Materials, Quizzes, Announcements):** Currently managed by a mock `dataService.ts`. This service uses in-memory data structures. For persistence beyond a session or across different instances, this would need to be replaced with a proper backend database (e.g., Firebase Firestore).
--   **Admin actions (Add/Update/Delete content):** Interact with `dataService.ts`. Note that "update" and "delete" operations in the admin panel might be UI-only for some features in the current state and don't permanently alter the base mock data in `dataService.ts` across server restarts (though `add` operations do modify the in-memory data for the current session).
+### API路由
 
-## GenAI Integration with Genkit
+项目使用Next.js API路由处理数据操作：
 
--   The application is set up to use **Genkit** with the **Google AI (Gemini)** plugin.
--   The Genkit instance is configured in `src/ai/genkit.ts`.
--   AI "Flows" (sequences of operations, potentially involving LLM calls) would typically reside in `src/ai/flows/`. These flows can be invoked from server components or API routes.
--   The provided codebase sets up the foundation for Genkit but does not include specific user-facing GenAI features out-of-the-box without further development of flows and their integration.
+- **/api/data/init**: 初始化数据存储
+- **/api/data/learning-materials**: 管理学习材料
+- **/api/data/quizzes**: 管理测验
+- **/api/data/announcements**: 管理公告
+- **/api/data/user-registry**: 管理用户注册
+- **/api/data/config**: 管理系统配置
+- **/api/data/clear**: 清除所有数据
 
-## Webhook
+### 样式
 
--   An example webhook endpoint is available at `src/app/api/webhook/content/route.ts`.
--   This endpoint allows for external updates to daily content (materials and quizzes) via a POST request.
--   It interacts with the `dataService.ts` to update the mock data.
+- 项目使用**Tailwind CSS**进行实用程序优先的样式设计
+- **ShadCN UI**用于预构建的可访问组件
+- 基础主题（颜色、圆角等）在`src/app/globals.css`中使用CSS变量配置，遵循ShadCN的主题方法
+
+### GenAI集成
+
+- 应用程序设置为使用**Genkit**和**Google AI (Gemini)**插件
+- Genkit实例在`src/ai/genkit.ts`中配置
+- AI"流程"（可能涉及LLM调用的操作序列）通常位于`src/ai/flows/`中
+- 当前代码库为Genkit奠定了基础，但没有包含具体的面向用户的GenAI功能

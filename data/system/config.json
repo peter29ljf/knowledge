@@ -1,0 +1,15 @@
+{
+  "version": "0.0.4",
+  "features": {
+    "quiz_enabled": true,
+    "messages_enabled": true
+  },
+  "scoring": {
+    "perfect_quiz_bonus": 5,
+    "grand_prize_threshold": 1000
+  },
+  "paths": {
+    "user_data": "./data/users",
+    "public_data": "./data/public"
+  }
+} 

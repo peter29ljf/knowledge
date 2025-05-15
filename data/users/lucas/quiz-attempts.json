@@ -1,0 +1,11 @@
+[
+  {
+    "quiz_id": "quiz1",
+    "date": "2024-07-10",
+    "score": 1,
+    "total_questions": 2,
+    "answers": [1, 0],
+    "timestamp": 1720004600000,
+    "points_earned": 2
+  }
+] 

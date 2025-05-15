@@ -41,13 +41,31 @@ export interface Announcement {
 
 export interface QuizAttempt {
   quizDate: string; // YYYY-MM-DD, unique identifier for the daily quiz
+  quiz_id: string;
   score: number; // Score for this specific quiz attempt (e.g., number of correct answers)
+  total_questions: number; // Total number of questions in the quiz
   answers: number[]; // User's selected option indices for each question
   timestamp: number; // When the quiz was completed
+  points_earned: number; // Points earned for this attempt
+}
+
+export interface ScoreHistoryEntry {
+  date: string;
+  points: number;
+  reason: string;
+}
+
+export interface Achievement {
+  id: string;
+  name: string;
+  achieved_at: string;
 }
 
 export interface UserScoreData {
   score: number; // Cumulative global score
+  history?: ScoreHistoryEntry[]; // History of score changes
+  achievements?: Achievement[]; // User achievements
+  last_updated?: string; // ISO date string
   quizAttempts?: Record<string, QuizAttempt>; // Keyed by quizDate (YYYY-MM-DD)
 }
 
@@ -57,6 +75,8 @@ export interface AdminMessage { // User to Admin
   userName: string;
   message: string;
   timestamp: number;
+  response?: string | null;
+  response_timestamp?: number | null;
   isRead?: boolean;
 }
 
@@ -65,5 +85,11 @@ export interface AppContent {
   learningMaterials: LearningMaterial[];
   quizzes: Quiz[];
   announcements: Announcement[];
+}
+
+// User announcement read status
+export interface AnnouncementStatus {
+  read_announcements: string[];
+  last_viewed: string;
 }
 
