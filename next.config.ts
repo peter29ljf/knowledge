@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // 允许服务器端组件使用node模块
+  experimental: {
+    serverComponentsExternalPackages: ["fs", "path"],
+  }
 };
 
 export default nextConfig;

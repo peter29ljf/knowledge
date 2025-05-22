@@ -39,6 +39,7 @@ const adminNavItems = [
   { name: 'Materials', href: '/admin/materials', icon: FileText },
   { name: 'Quizzes', href: '/admin/quizzes', icon: ClipboardList },
   { name: 'Announcements', href: '/admin/announcements', icon: Megaphone },
+  { name: 'Messages', href: '/admin/messages', icon: Users },
   // { name: 'Users', href: '/admin/users', icon: Users },
   // { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];

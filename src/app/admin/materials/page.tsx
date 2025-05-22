@@ -36,7 +36,7 @@ import { useSearchParams } from 'next/navigation';
 
 
 export default function AdminMaterialsPage() {
-  const { learningMaterials, addLearningMaterial, fetchAllAdminContent, isLoading } = useAppData(); // Assuming update/delete will be added
+  const { learningMaterials, addLearningMaterial, fetchAllAdminContent, isLoading, deleteLearningMaterial, updateLearningMaterial } = useAppData(); 
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
@@ -76,31 +76,43 @@ export default function AdminMaterialsPage() {
 
   const handleSaveMaterial = async () => {
     if (!currentMaterial.title || !currentMaterial.content || !currentMaterial.date) {
-      toast({ title: "Error", description: "Title, content, and date are required.", variant: "destructive" });
+      toast({ title: "Error", description: "Title, content, and date are required fields.", variant: "destructive" });
       return;
     }
     
-    // Here you would call updateLearningMaterial or addLearningMaterial from context
-    // For now, let's assume addLearningMaterial handles both new and updates based on ID (if context is extended)
-    // Or, we add a specific update function to context and dataService.
-    // For this scaffold, we'll focus on adding.
-    if (isEditing) {
-      // await updateLearningMaterial(currentMaterial as LearningMaterial); // Requires implementation
-      toast({ title: "Info", description: "Update functionality to be implemented." });
-    } else {
-       await addLearningMaterial(currentMaterial as Omit<LearningMaterial, 'id'>);
+    try {
+      if (isEditing && currentMaterial.id) {
+        // 调用更新功能
+        const updatedMaterial = await updateLearningMaterial(currentMaterial as LearningMaterial);
+        if (updatedMaterial) {
+          toast({ title: "Success", description: "Learning material updated successfully." });
+          await fetchAllAdminContent(); // 刷新列表
+        } else {
+          toast({ title: "Error", description: "Failed to update material, possibly unable to find the material.", variant: "destructive" });
+        }
+      } else {
+        await addLearningMaterial(currentMaterial as Omit<LearningMaterial, 'id'>);
+        toast({ title: "Success", description: "New material added successfully." });
+      }
+      setIsModalOpen(false);
+      setCurrentMaterial({});
+    } catch (error) {
+      console.error('Error saving material:', error);
+      toast({ title: "Error", description: "An error occurred while saving the material.", variant: "destructive" });
     }
-    setIsModalOpen(false);
-    setCurrentMaterial({});
   };
   
-  const handleDeleteMaterial = (materialId: string) => {
-    // UI only delete for now
-    setMaterialsList(prev => prev.filter(m => m.id !== materialId));
-    toast({ title: "Info", description: `Material ${materialId} would be deleted (UI only).`});
+  const handleDeleteMaterial = async (materialId: string) => {
+    try {
+      // 使用真正的删除功能
+      await deleteLearningMaterial(materialId);
+    } catch (error) {
+      console.error('Error deleting material:', error);
+      toast({ title: "Error", description: `Failed to delete material ${materialId}.`, variant: "destructive" });
+    }
   }
   
-  const filteredMaterials = materialsList.filter(material => 
+  const filteredMaterials = learningMaterials.filter(material => 
     material.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     material.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
     material.date.includes(searchTerm)
@@ -123,7 +135,7 @@ export default function AdminMaterialsPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
-                placeholder="Search materials by title, content, or date (YYYY-MM-DD)..."
+                placeholder="Search materials by title, content or date (YYYY-MM-DD)..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 text-base py-6"
@@ -166,7 +178,7 @@ export default function AdminMaterialsPage() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the material "{material.title}".
+                                This action cannot be undone. This will permanently delete material "{material.title}".
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -193,7 +205,7 @@ export default function AdminMaterialsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>{isEditing ? 'Edit' : 'Add New'} Learning Material</AlertDialogTitle>
             <AlertDialogDescription>
-              Fill in the details for the learning material.
+              Fill in the details of the learning material.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
@@ -231,7 +243,7 @@ export default function AdminMaterialsPage() {
               />
             </div>
             <div>
-              <Label htmlFor="material-content">Content (Markdown/HTML supported)</Label>
+              <Label htmlFor="material-content">Content (Supports Markdown/HTML)</Label>
               <Textarea
                 id="material-content"
                 value={currentMaterial.content || ''}

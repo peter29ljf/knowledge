@@ -1,167 +1,439 @@
-import type { LearningMaterial, Quiz, Announcement, AppContent, QuizQuestion, QuizQuestionOption } from './types';
+import type { 
+  LearningMaterial, 
+  Quiz, 
+  Announcement, 
+  AppContent, 
+  QuizQuestion,
+  QuizAttempt,
+  AdminMessage,
+  UserScoreData
+} from './types';
 
-// Helper to get today's date in YYYY-MM-DD format
-const getTodayDateString = (): string => {
-  return new Date().toISOString().split('T')[0];
+// 缓存 - 用于减少API请求
+let materialsCache: LearningMaterial[] | null = null;
+let quizzesCache: Quiz[] | null = null;
+let announcementsCache: Announcement[] | null = null;
+let configCache: any = null;
+let userRegistryCache: any = null;
+
+// API端点
+const API_ENDPOINTS = {
+  INIT: '/api/data/init',
+  LEARNING_MATERIALS: '/api/data/learning-materials',
+  QUIZZES: '/api/data/quizzes',
+  ANNOUNCEMENTS: '/api/data/announcements',
+  CONFIG: '/api/data/config',
+  USER_REGISTRY: '/api/data/user-registry',
+  USER_DATA: '/api/data/user'
 };
 
-const createSampleQuestion = (id: string, text: string, options: string[], correct: number, explanation: string): QuizQuestion => ({
-  id,
-  questionText: text,
-  options: options.map(opt => ({ text: opt })),
-  correctOptionIndex: correct,
-  explanation,
-});
-
-let mockContent: AppContent = {
-  learningMaterials: [
-    { id: 'lm1', date: getTodayDateString(), title: 'Introduction to Algebra', content: 'Algebra is a branch of mathematics dealing with symbols and the rules for manipulating those symbols.' },
-    { id: 'lm2', date: '2024-07-20', title: 'Understanding Photosynthesis', content: 'Photosynthesis is the process used by plants, algae and certain bacteria to harness energy from sunlight and turn it into chemical energy.' },
-    { id: 'lm_2024_05_10', date: '2024-05-10', title: 'Basic Geometry: Shapes and Angles', content: "Geometry is the branch of mathematics concerned with the properties and relations of points, lines, surfaces, solids, and higher dimensional analogues. Today we'll focus on basic 2D shapes like triangles, squares, circles, and understanding different types of angles (acute, obtuse, right)." },
-    { id: 'lm_2025_05_10', date: '2025-05-10', title: 'Introduction to World Capitals', content: "Today, we will explore some of the major world capitals, their significance, and a few interesting facts about them. Capitals are often the political, economic, and cultural hearts of their nations.\n\nFor example:\n- Paris, France: Known for the Eiffel Tower and Louvre Museum.\n- Tokyo, Japan: A bustling metropolis blending tradition and modernity.\n- Ottawa, Canada: The political center of Canada, known for Parliament Hill.\n- Canberra, Australia: A planned city designed by Walter Burley Griffin.\n- Cairo, Egypt: Home to ancient wonders like the Pyramids of Giza and the Sphinx." },
-  ],
-  quizzes: [
-    { 
-      id: 'quiz1', 
-      date: getTodayDateString(), 
-      title: 'Daily Algebra Quiz', 
-      questions: [
-        createSampleQuestion('q1a', 'What is 2 + 2?', ['3', '4', '5', '6'], 1, 'The sum of 2 and 2 is 4.'),
-        createSampleQuestion('q1b', 'Solve for x: x + 5 = 10', ['3', '4', '5', '10'], 2, 'Subtract 5 from both sides: x = 10 - 5, so x = 5.'),
-        createSampleQuestion('q1c', 'What is 3 * 3?', ['6', '9', '12', '33'], 1, '3 multiplied by 3 is 9.'),
-        createSampleQuestion('q1d', 'Is 7 a prime number?', ['Yes', 'No'], 0, 'A prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself. 7 fits this definition.'),
-        createSampleQuestion('q1e', 'What is the square root of 16?', ['2', '4', '8', '16'], 1, 'The square root of 16 is 4, because 4 * 4 = 16.'),
-      ]
-    },
-    { 
-      id: 'quiz2', 
-      date: '2024-07-20', 
-      title: 'Photosynthesis Basics', 
-      questions: [
-        createSampleQuestion('q2a', 'What gas do plants absorb during photosynthesis?', ['Oxygen', 'Carbon Dioxide', 'Nitrogen'], 1, 'Plants absorb Carbon Dioxide (CO2) for photosynthesis.'),
-        createSampleQuestion('q2b', 'What is the primary pigment used in photosynthesis?', ['Chlorophyll', 'Carotene', 'Xanthophyll'], 0, 'Chlorophyll is the primary pigment that captures light energy.'),
-      ]
-    },
-     { 
-      id: 'quiz_2024_05_10', 
-      date: '2024-05-10', 
-      title: 'Daily Geometry Challenge', 
-      questions: [
-        createSampleQuestion('q_geo_1', 'How many sides does a triangle have?', ['2', '3', '4', '5'], 1, 'A triangle is a polygon with three edges and three vertices.'),
-        createSampleQuestion('q_geo_2', 'What is the sum of angles in a triangle?', ['90 degrees', '180 degrees', '270 degrees', '360 degrees'], 1, 'The sum of the interior angles of a triangle always adds up to 180 degrees.'),
-        createSampleQuestion('q_geo_3', 'An angle less than 90 degrees is called?', ['Obtuse angle', 'Right angle', 'Acute angle', 'Reflex angle'], 2, 'An acute angle is an angle that measures less than 90 degrees.'),
-        createSampleQuestion('q_geo_4', 'What is the name of a shape with 4 equal sides and 4 right angles?', ['Rectangle', 'Rhombus', 'Square', 'Trapezoid'], 2, 'A square is a regular quadrilateral, which means that it has four equal sides and four equal angles (90-degree angles, or right angles).'),
-        createSampleQuestion('q_geo_5', 'The distance around a circle is called its...?', ['Radius', 'Diameter', 'Area', 'Circumference'], 3, 'The circumference is the distance around the edge of a circle (or any curvy shape).'),
-      ]
-    },
-    { 
-      id: 'quiz_2025_05_10', 
-      date: '2025-05-10', 
-      title: 'World Capitals Quiz', 
-      questions: [
-        createSampleQuestion('q_cap_1', 'What is the capital of France?', ['Berlin', 'Madrid', 'Paris', 'Rome'], 2, 'Paris is the capital and most populous city of France, known for landmarks like the Eiffel Tower and the Louvre Museum.'),
-        createSampleQuestion('q_cap_2', 'Tokyo is the capital of which country?', ['China', 'South Korea', 'Japan', 'Thailand'], 2, 'Tokyo is the capital and largest city of Japan. It is a major global financial center and one of the most populous metropolitan areas in the world.'),
-        createSampleQuestion('q_cap_3', 'Which of these cities is the capital of Canada?', ['Toronto', 'Vancouver', 'Montreal', 'Ottawa'], 3, 'Ottawa, in the province of Ontario, is the capital of Canada. It was chosen by Queen Victoria in 1857.'),
-        createSampleQuestion('q_cap_4', 'What is the capital of Australia?', ['Sydney', 'Melbourne', 'Canberra', 'Perth'], 2, 'Canberra is the capital city of Australia. It was selected as the capital in 1908 as a compromise between rivals Sydney and Melbourne.'),
-        createSampleQuestion('q_cap_5', 'The capital of Egypt is?', ['Alexandria', 'Cairo', 'Giza', 'Luxor'], 1, 'Cairo is the capital of Egypt and the largest city in the Arab world. It is located near the Nile Delta.'),
-      ]
-    },
-  ],
-  announcements: [
-    { id: 'an1', date: getTodayDateString(), message: 'Welcome to StudyQuest! New materials are posted daily.', publishedAt: Date.now() - 3600000 },
-    { id: 'an2', date: '2024-07-20', message: 'Mid-term review session next week.', publishedAt: Date.now() - 86400000 },
-  ],
+// 帮助函数：安全地发起API请求并返回JSON
+const fetchFromApi = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
+    }
+    return await response.json() as T;
+  } catch (error) {
+    console.error(`API请求出错 ${url}:`, error);
+    throw error;
+  }
 };
 
-// Simulate API calls
+// 初始化数据存储
+export const initializeDataStore = async (): Promise<void> => {
+  try {
+    // 通过API初始化数据
+    await fetchFromApi(API_ENDPOINTS.INIT, {
+      method: 'POST'
+    });
+    
+    // 加载缓存
+    materialsCache = await getAllLearningMaterials();
+    quizzesCache = await getAllQuizzes();
+    announcementsCache = await getAllAnnouncements();
+    configCache = await getConfig();
+    userRegistryCache = await getUserRegistry();
+    
+    console.log('数据存储已初始化', {
+      materialsCount: materialsCache.length,
+      quizzesCount: quizzesCache.length,
+      announcementsCount: announcementsCache.length,
+      usersCount: userRegistryCache.users?.length || 0
+    });
+  } catch (error) {
+    console.error('初始化数据存储时出错:', error);
+  }
+};
+
+// 学习材料相关操作
 export const getLearningMaterialByDate = async (date: string): Promise<LearningMaterial | undefined> => {
-  return mockContent.learningMaterials.find(material => material.date === date);
+  const materials = await getAllLearningMaterials();
+  return materials.find(material => material.date === date);
 };
 
 export const getQuizByDate = async (date: string): Promise<Quiz | undefined> => {
-  return mockContent.quizzes.find(quiz => quiz.date === date);
+  const quizzes = await getAllQuizzes();
+  return quizzes.find(quiz => quiz.date === date);
 };
 
 export const getAnnouncements = async (limit: number = 5): Promise<Announcement[]> => {
-  return [...mockContent.announcements].sort((a,b) => b.publishedAt - a.publishedAt).slice(0, limit);
+  const announcements = await getAllAnnouncements();
+  return [...announcements].sort((a,b) => b.publishedAt - a.publishedAt).slice(0, limit);
 };
 
-// Admin functions to modify mock data
+// 获取用户的公告阅读状态
+export const getAnnouncementStatus = async (userId: string): Promise<{ read_announcements: string[], last_viewed: string }> => {
+  const response = await fetchFromApi<{ read_announcements: string[], last_viewed: string }>(
+    `${API_ENDPOINTS.USER_DATA}/${userId}/announcement-status`
+  );
+  return response;
+};
+
+// 更新用户的公告阅读状态
+export const updateAnnouncementStatus = async (
+  userId: string, 
+  readIds: string[]
+): Promise<boolean> => {
+  try {
+    await fetchFromApi(`${API_ENDPOINTS.USER_DATA}/${userId}/announcement-status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ readIds })
+    });
+    return true;
+  } catch (error) {
+    console.error('更新公告状态出错:', error);
+    return false;
+  }
+};
+
+// 管理员功能：添加学习材料
 export const addLearningMaterial = async (material: Omit<LearningMaterial, 'id'>): Promise<LearningMaterial> => {
-  const newMaterial: LearningMaterial = { ...material, id: `lm${Date.now()}` };
-  mockContent.learningMaterials.push(newMaterial);
+  const newMaterial = await fetchFromApi<LearningMaterial>(API_ENDPOINTS.LEARNING_MATERIALS, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(material)
+  });
+  
+  // 更新缓存
+  if (materialsCache) {
+    materialsCache = [...materialsCache, newMaterial];
+  }
+  
+  console.log('添加了新材料', newMaterial.title);
   return newMaterial;
 };
 
+// 管理员功能：更新学习材料
 export const updateLearningMaterial = async (updatedMaterial: LearningMaterial): Promise<LearningMaterial | undefined> => {
-  const index = mockContent.learningMaterials.findIndex(m => m.id === updatedMaterial.id);
-  if (index !== -1) {
-    mockContent.learningMaterials[index] = updatedMaterial;
-    return updatedMaterial;
+  try {
+    const result = await fetchFromApi<LearningMaterial>(`${API_ENDPOINTS.LEARNING_MATERIALS}/${updatedMaterial.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedMaterial)
+    });
+    
+    // 更新缓存
+    if (materialsCache) {
+      materialsCache = materialsCache.map(m => 
+        m.id === updatedMaterial.id ? updatedMaterial : m
+      );
+    }
+    
+    console.log('更新了材料', updatedMaterial.title);
+    return result;
+  } catch (error) {
+    console.error('更新学习材料出错:', error);
+    return undefined;
   }
-  return undefined;
 };
 
+// 管理员功能：删除学习材料
+export const deleteLearningMaterial = async (materialId: string): Promise<boolean> => {
+  try {
+    await fetchFromApi(`${API_ENDPOINTS.LEARNING_MATERIALS}/${materialId}`, {
+      method: 'DELETE'
+    });
+    
+    // 更新缓存
+    if (materialsCache) {
+      materialsCache = materialsCache.filter(m => m.id !== materialId);
+    }
+    
+    console.log('删除了材料', materialId);
+    return true;
+  } catch (error) {
+    console.error(`删除学习材料出错:`, error);
+    return false;
+  }
+};
+
+// 测验相关操作
 export const addQuiz = async (quiz: Omit<Quiz, 'id'>): Promise<Quiz> => {
-  const newQuiz: Quiz = { ...quiz, id: `quiz${Date.now()}` };
-  mockContent.quizzes.push(newQuiz);
+  const newQuiz = await fetchFromApi<Quiz>(API_ENDPOINTS.QUIZZES, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(quiz)
+  });
+  
+  // 更新缓存
+  if (quizzesCache) {
+    quizzesCache = [...quizzesCache, newQuiz];
+  }
+  
+  console.log('添加了新测验', newQuiz.title);
   return newQuiz;
 };
 
 export const updateQuiz = async (updatedQuiz: Quiz): Promise<Quiz | undefined> => {
-  const index = mockContent.quizzes.findIndex(q => q.id === updatedQuiz.id);
-  if (index !== -1) {
-    mockContent.quizzes[index] = updatedQuiz;
-    return updatedQuiz;
+  try {
+    const result = await fetchFromApi<Quiz>(`${API_ENDPOINTS.QUIZZES}/${updatedQuiz.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedQuiz)
+    });
+    
+    // 更新缓存
+    if (quizzesCache) {
+      quizzesCache = quizzesCache.map(q => 
+        q.id === updatedQuiz.id ? updatedQuiz : q
+      );
+    }
+    
+    console.log('更新了测验', updatedQuiz.title);
+    return result;
+  } catch (error) {
+    console.error('更新测验出错:', error);
+    return undefined;
   }
-  return undefined;
 };
 
+export const deleteQuiz = async (quizId: string): Promise<boolean> => {
+  try {
+    await fetchFromApi(`${API_ENDPOINTS.QUIZZES}/${quizId}`, {
+      method: 'DELETE'
+    });
+    
+    // 更新缓存
+    if (quizzesCache) {
+      quizzesCache = quizzesCache.filter(q => q.id !== quizId);
+    }
+    
+    console.log('删除了测验', quizId);
+    return true;
+  } catch (error) {
+    console.error(`删除测验出错:`, error);
+    return false;
+  }
+};
+
+// 公告相关操作
 export const addAnnouncement = async (announcement: Omit<Announcement, 'id' | 'publishedAt'>): Promise<Announcement> => {
-  const newAnnouncement: Announcement = { ...announcement, id: `an${Date.now()}`, publishedAt: Date.now() };
-  mockContent.announcements.unshift(newAnnouncement); // Add to the beginning
+  const newAnnouncement = await fetchFromApi<Announcement>(API_ENDPOINTS.ANNOUNCEMENTS, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(announcement)
+  });
+  
+  // 更新缓存
+  if (announcementsCache) {
+    announcementsCache = [...announcementsCache, newAnnouncement];
+  }
+  
+  console.log('添加了新公告');
   return newAnnouncement;
 };
 
-// For Webhook updates - this is a simplified version
-export const updateDailyContentViaWebhook = async (data: { date: string, material?: Partial<LearningMaterial>, quiz?: Partial<Quiz> }): Promise<boolean> => {
-  const { date, material, quiz } = data;
-  let materialUpdated = false;
-  let quizUpdated = false;
-
-  if (material) {
-    let existingMaterial = mockContent.learningMaterials.find(m => m.date === date);
-    if (existingMaterial) {
-      Object.assign(existingMaterial, material);
-    } else {
-      mockContent.learningMaterials.push({ id: `lm-wh-${Date.now()}`, date, title: 'New Material', content: 'Webhook content', ...material });
+export const deleteAnnouncement = async (announcementId: string): Promise<boolean> => {
+  try {
+    await fetchFromApi(`${API_ENDPOINTS.ANNOUNCEMENTS}/${announcementId}`, {
+      method: 'DELETE'
+    });
+    
+    // 更新缓存
+    if (announcementsCache) {
+      announcementsCache = announcementsCache.filter(a => a.id !== announcementId);
     }
-    materialUpdated = true;
+    
+    console.log('删除了公告', announcementId);
+    return true;
+  } catch (error) {
+    console.error(`删除公告出错:`, error);
+    return false;
   }
-
-  if (quiz) {
-    let existingQuiz = mockContent.quizzes.find(q => q.date === date);
-    if (existingQuiz) {
-      Object.assign(existingQuiz, quiz);
-    } else {
-      mockContent.quizzes.push({ id: `quiz-wh-${Date.now()}`, date, title: 'New Quiz', questions: [], ...quiz });
-    }
-    quizUpdated = true;
-  }
-  console.log("Webhook processed. Mock data updated:", mockContent);
-  return materialUpdated || quizUpdated;
 };
 
+export const updateAnnouncement = async (updatedAnnouncement: Announcement): Promise<Announcement | undefined> => {
+  try {
+    const result = await fetchFromApi<Announcement>(`${API_ENDPOINTS.ANNOUNCEMENTS}/${updatedAnnouncement.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedAnnouncement)
+    });
+    
+    // 更新缓存
+    if (announcementsCache) {
+      announcementsCache = announcementsCache.map(a => 
+        a.id === updatedAnnouncement.id ? updatedAnnouncement : a
+      );
+    }
+    
+    console.log('更新了公告');
+    return result;
+  } catch (error) {
+    console.error('更新公告出错:', error);
+    return undefined;
+  }
+};
+
+// 用户测验尝试相关操作
+export const saveQuizAttempt = async (
+  userId: string,
+  quizAttempt: Omit<QuizAttempt, 'timestamp'>
+): Promise<QuizAttempt> => {
+  const newAttempt = await fetchFromApi<QuizAttempt>(`${API_ENDPOINTS.USER_DATA}/${userId}/quiz-attempts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(quizAttempt)
+  });
+  
+  return newAttempt;
+};
+
+// 获取用户的测验尝试记录
+export const getQuizAttempts = async (userId: string): Promise<QuizAttempt[]> => {
+  return fetchFromApi<QuizAttempt[]>(`${API_ENDPOINTS.USER_DATA}/${userId}/quiz-attempts`);
+};
+
+// 用户积分相关操作
+export const getUserScore = async (userId: string): Promise<UserScoreData> => {
+  return fetchFromApi<UserScoreData>(`${API_ENDPOINTS.USER_DATA}/${userId}/score`);
+};
+
+export const updateUserScore = async (
+  userId: string,
+  pointsToAdd: number,
+  attempt: QuizAttempt
+): Promise<UserScoreData> => {
+  return fetchFromApi<UserScoreData>(`${API_ENDPOINTS.USER_DATA}/${userId}/score`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pointsToAdd, attempt })
+  });
+};
+
+// 用户消息相关操作
+export const saveUserMessage = async (
+  userId: string,
+  message: string
+): Promise<AdminMessage> => {
+  return fetchFromApi<AdminMessage>(`${API_ENDPOINTS.USER_DATA}/${userId}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message })
+  });
+};
+
+export const getUserMessages = async (userId: string): Promise<AdminMessage[]> => {
+  return fetchFromApi<AdminMessage[]>(`${API_ENDPOINTS.USER_DATA}/${userId}/messages`);
+};
+
+export const updateUserMessageReadStatus = async (
+  userId: string,
+  messageId: string,
+  isRead: boolean = true
+): Promise<boolean> => {
+  try {
+    await fetchFromApi(`${API_ENDPOINTS.USER_DATA}/${userId}/messages/${messageId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isRead })
+    });
+    return true;
+  } catch (error) {
+    console.error('更新消息状态出错:', error);
+    return false;
+  }
+};
+
+// Webhook更新函数
+export const updateDailyContentViaWebhook = async (
+  data: { 
+    date: string, 
+    material?: Partial<LearningMaterial>, 
+    quiz?: Partial<Quiz>, 
+    announcement?: Partial<Announcement> 
+  }
+): Promise<boolean> => {
+  try {
+    await fetchFromApi('/api/webhook/daily-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return true;
+  } catch (error) {
+    console.error('Webhook更新出错:', error);
+    return false;
+  }
+};
+
+// 获取所有数据
 export const getAllLearningMaterials = async (): Promise<LearningMaterial[]> => {
-  return [...mockContent.learningMaterials];
-}
+  if (!materialsCache) {
+    materialsCache = await fetchFromApi<LearningMaterial[]>(API_ENDPOINTS.LEARNING_MATERIALS);
+  }
+  return [...materialsCache];
+};
 
 export const getAllQuizzes = async (): Promise<Quiz[]> => {
-  return [...mockContent.quizzes];
-}
+  if (!quizzesCache) {
+    quizzesCache = await fetchFromApi<Quiz[]>(API_ENDPOINTS.QUIZZES);
+  }
+  return [...quizzesCache];
+};
 
 export const getAllAnnouncements = async (): Promise<Announcement[]> => {
-  return [...mockContent.announcements];
-}
+  if (!announcementsCache) {
+    announcementsCache = await fetchFromApi<Announcement[]>(API_ENDPOINTS.ANNOUNCEMENTS);
+  }
+  return [...announcementsCache];
+};
+
+// 获取系统配置
+export const getConfig = async (): Promise<any> => {
+  if (!configCache) {
+    configCache = await fetchFromApi(API_ENDPOINTS.CONFIG);
+  }
+  return { ...configCache };
+};
+
+// 获取用户注册表
+export const getUserRegistry = async (): Promise<any> => {
+  if (!userRegistryCache) {
+    userRegistryCache = await fetchFromApi(API_ENDPOINTS.USER_REGISTRY);
+  }
+  return { ...userRegistryCache };
+};
+
+// 清除所有数据，重置为空状态
+export const clearAllData = async (): Promise<boolean> => {
+  try {
+    await fetchFromApi('/api/data/clear', { method: 'POST' });
+    
+    // 重置缓存
+    materialsCache = [];
+    quizzesCache = [];
+    announcementsCache = [];
+    
+    console.log('所有数据已清除');
+    return true;
+  } catch (error) {
+    console.error('清除数据时出错:', error);
+    return false;
+  }
+};
 
 

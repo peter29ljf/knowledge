@@ -192,6 +192,62 @@ export default function QuizPage() {
     </Popover>
   );
 
+  // 定义ResultsDialog的props类型
+  interface ResultsDialogProps {
+    isOpen: boolean;
+    onClose: () => void;
+    quizData: Quiz;
+    userAnswers: number[];
+    userScore: number;
+  }
+
+  // 提取为单独的组件，方便复用
+  const ResultsDialog = ({ isOpen, onClose, quizData, userAnswers, userScore }: ResultsDialogProps) => (
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
+      <AlertDialogContent className="max-w-2xl w-full">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-2xl">Quiz Results</AlertDialogTitle>
+          <AlertDialogDescription>
+            You scored {userScore} out of {quizData.questions.length} questions correct.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <ScrollArea className="h-[400px] p-1 pr-4 rounded-md border bg-secondary/10">
+          <div className="space-y-4 p-4">
+          {quizData.questions.map((q, index) => (
+            <Card key={q.id} className={`shadow-sm ${userAnswers[index] === q.correctOptionIndex ? 'border-green-500' : 'border-red-500'}`}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center">
+                  {userAnswers[index] === q.correctOptionIndex ? 
+                    <CheckCircle className="h-5 w-5 mr-2 text-green-500" /> : 
+                    <XCircle className="h-5 w-5 mr-2 text-red-500" />}
+                  Question {index + 1}: {q.questionText}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1 text-sm">
+                <p>Your answer: <span className={`font-semibold ${userAnswers[index] === q.correctOptionIndex ? 'text-green-600' : 'text-red-600'}`}>
+                  {q.options[userAnswers[index]]?.text || "Not answered"}</span></p>
+                {userAnswers[index] !== q.correctOptionIndex && 
+                  <p>Correct answer: <span className="font-semibold text-green-600">{q.options[q.correctOptionIndex].text}</span></p>}
+                <details className="mt-1">
+                    <summary className="cursor-pointer text-primary hover:underline flex items-center">
+                      <HelpCircle className="h-4 w-4 mr-1" /> Explanation
+                    </summary>
+                    <p className="mt-1 p-2 bg-background rounded text-muted-foreground">{q.explanation}</p>
+                </details>
+              </CardContent>
+            </Card>
+          ))}
+          </div>
+        </ScrollArea>
+        <AlertDialogFooter>
+          <Button onClick={onClose} className="w-full text-lg py-3">
+              <RotateCcw className="mr-2 h-5 w-5" /> Close
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   if (isLoadingQuiz || appDataLoading) {
     return <div className="flex justify-center items-center h-64"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   }
@@ -235,11 +291,31 @@ export default function QuizPage() {
             </p>
           )}
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button onClick={() => { setShowResults(true); }} size="lg" variant="outline" className="text-lg py-6">
+            <Button onClick={() => { 
+              if (previousAttempt && quiz) {
+                // 生成正确的反馈数据
+                const prevFeedback = quiz.questions.map((q, idx) => ({
+                  isCorrect: previousAttempt.answers[idx] === q.correctOptionIndex,
+                  selectedOption: previousAttempt.answers[idx],
+                }));
+                setFeedback(prevFeedback);
+                setAnswers(previousAttempt.answers);
+                setShowResults(true);
+              }
+            }} size="lg" variant="outline" className="text-lg py-6">
               View Your Answers
             </Button>
           </div>
         </CardContent>
+
+        {/* 使用共享的结果对话框组件 */}
+        {previousAttempt && <ResultsDialog 
+          isOpen={showResults} 
+          onClose={() => setShowResults(false)} 
+          quizData={quiz} 
+          userAnswers={previousAttempt.answers} 
+          userScore={previousAttempt.score} 
+        />}
       </Card>
     );
   }
@@ -335,45 +411,19 @@ export default function QuizPage() {
         </CardContent>
       </Card>
 
-      <AlertDialog open={showResults} onOpenChange={setShowResults}>
-        <AlertDialogContent className="max-w-2xl w-full">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl">Quiz Results</AlertDialogTitle>
-            <AlertDialogDescription>
-              You scored {score} out of {quiz.questions.length} questions correct.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <ScrollArea className="h-[400px] p-1 pr-4 rounded-md border bg-secondary/10">
-            <div className="space-y-4 p-4">
-            {quiz.questions.map((q, index) => (
-              <Card key={q.id} className={`shadow-sm ${answers[index] === q.correctOptionIndex ? 'border-green-500' : 'border-red-500'}`}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center">
-                    {answers[index] === q.correctOptionIndex ? <CheckCircle className="h-5 w-5 mr-2 text-green-500" /> : <XCircle className="h-5 w-5 mr-2 text-red-500" />}
-                    Question {index + 1}: {q.questionText}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-1 text-sm">
-                  <p>Your answer: <span className={`font-semibold ${answers[index] === q.correctOptionIndex ? 'text-green-600' : 'text-red-600'}`}>{q.options[answers[index]]?.text || "Not answered"}</span></p>
-                  {answers[index] !== q.correctOptionIndex && <p>Correct answer: <span className="font-semibold text-green-600">{q.options[q.correctOptionIndex].text}</span></p>}
-                  <details className="mt-1">
-                      <summary className="cursor-pointer text-primary hover:underline flex items-center">
-                        <HelpCircle className="h-4 w-4 mr-1" /> Explanation
-                      </summary>
-                      <p className="mt-1 p-2 bg-background rounded text-muted-foreground">{q.explanation}</p>
-                  </details>
-                </CardContent>
-              </Card>
-            ))}
-            </div>
-          </ScrollArea>
-          <AlertDialogFooter>
-            <Button onClick={() => { setShowResults(false); loadQuiz();}} className="w-full text-lg py-3">
-                <RotateCcw className="mr-2 h-5 w-5" /> Close & Reset Date Picker
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* 使用共享的结果对话框组件 */}
+      {quiz && <ResultsDialog 
+        isOpen={showResults} 
+        onClose={() => {
+          setShowResults(false);
+          if (quizState !== 'completed_previously') {
+            loadQuiz();
+          }
+        }}
+        quizData={quiz} 
+        userAnswers={answers} 
+        userScore={score} 
+      />}
     </div>
   );
 }

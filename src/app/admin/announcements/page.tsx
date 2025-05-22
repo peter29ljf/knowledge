@@ -34,13 +34,13 @@ import { Input } from '@/components/ui/input';
 
 
 export default function AdminAnnouncementsPage() {
-  const { announcements, addAnnouncement, fetchAllAdminContent, isLoading } = useAppData();
+  const { announcements, addAnnouncement, fetchAllAdminContent, isLoading, deleteAnnouncement, updateAnnouncement } = useAppData();
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentAnnouncement, setCurrentAnnouncement] = useState<Partial<Omit<Announcement, 'id' | 'publishedAt'>>>({});
-  const [isEditing, setIsEditing] = useState(false); // Placeholder for edit functionality
+  const [currentAnnouncement, setCurrentAnnouncement] = useState<Partial<Announcement>>({});
+  const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
   // For simplicity, delete is not fully implemented on backend, this will be UI only for now
@@ -64,10 +64,15 @@ export default function AdminAnnouncementsPage() {
 
   const handleOpenModal = (announcement?: Announcement) => {
     if (announcement) {
-      setCurrentAnnouncement({ message: announcement.message, date: announcement.date });
-      setIsEditing(true); // This would be used if edit was fully implemented
+      setCurrentAnnouncement({ 
+        id: announcement.id,
+        message: announcement.message, 
+        date: announcement.date,
+        publishedAt: announcement.publishedAt
+      });
+      setIsEditing(true);
     } else {
-      setCurrentAnnouncement({ message: '', date: format(new Date(), 'yyyy-MM-dd') }); // Default date for new announcement
+      setCurrentAnnouncement({ message: '', date: format(new Date(), 'yyyy-MM-dd') });
       setIsEditing(false);
     }
     setIsModalOpen(true);
@@ -79,20 +84,44 @@ export default function AdminAnnouncementsPage() {
       return;
     }
     
-    if (isEditing) {
-      // await updateAnnouncement(currentAnnouncement as Announcement); // Requires implementation in context/dataService
-      toast({ title: "Info", description: "Update functionality to be implemented." });
-    } else {
-       await addAnnouncement(currentAnnouncement as Omit<Announcement, 'id'|'publishedAt'>);
+    try {
+      if (isEditing) {
+        // 完整的公告对象需要id和publishedAt，确保它们已经存在
+        if (!currentAnnouncement.id || !currentAnnouncement.publishedAt) {
+          toast({ title: "Error", description: "Missing required announcement information for editing.", variant: "destructive" });
+          return;
+        }
+        
+        const updatedAnnouncement = await updateAnnouncement(currentAnnouncement as Announcement);
+        if (updatedAnnouncement) {
+          toast({ title: "Success", description: "Announcement has been updated." });
+          await fetchAllAdminContent(); // 刷新列表
+        } else {
+          toast({ title: "Error", description: "Failed to update announcement. It may not exist.", variant: "destructive" });
+        }
+      } else {
+        await addAnnouncement({
+          message: currentAnnouncement.message,
+          date: currentAnnouncement.date
+        });
+        toast({ title: "Success", description: "New announcement has been published." });
+      }
+      setIsModalOpen(false);
+      setCurrentAnnouncement({});
+    } catch (error) {
+      console.error('Error saving announcement:', error);
+      toast({ title: "Error", description: "An error occurred while saving the announcement.", variant: "destructive" });
     }
-    setIsModalOpen(false);
-    setCurrentAnnouncement({});
   };
   
-  const handleDeleteAnnouncement = (announcementId: string) => {
-    // UI only delete for now
-    setAnnouncementsList(prev => prev.filter(a => a.id !== announcementId));
-    toast({ title: "Info", description: `Announcement ${announcementId} would be deleted (UI only).`});
+  const handleDeleteAnnouncement = async (announcementId: string) => {
+    try {
+      const success = await deleteAnnouncement(announcementId);
+      toast({ title: "Success", description: "Announcement has been successfully deleted." });
+    } catch (error) {
+      console.error('Error deleting announcement:', error);
+      toast({ title: "Error", description: "An error occurred while deleting the announcement.", variant: "destructive" });
+    }
   }
   
   const filteredAnnouncements = announcementsList.filter(announcement => 
@@ -149,10 +178,9 @@ export default function AdminAnnouncementsPage() {
                       <TableCell className="font-medium truncate max-w-md" title={announcement.message}>{announcement.message}</TableCell>
                       <TableCell>{format(new Date(announcement.date), 'PP')}</TableCell>
                       <TableCell className="space-x-2">
-                        {/* Edit functionality can be added here */}
-                        {/* <Button variant="outline" size="sm" onClick={() => handleOpenModal(announcement)}>
+                        <Button variant="outline" size="sm" onClick={() => handleOpenModal(announcement)}>
                           <Edit2 className="mr-1 h-4 w-4" /> Edit
-                        </Button> */}
+                        </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                              <Button variant="destructive" size="sm">

@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function AdminQuizzesPage() {
-  const { quizzes, addQuiz, fetchAllAdminContent, isLoading } = useAppData();
+  const { quizzes, addQuiz, fetchAllAdminContent, isLoading, deleteQuiz, updateQuiz } = useAppData();
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
@@ -87,19 +87,36 @@ export default function AdminQuizzesPage() {
         }
     }
 
-    if (isEditing) {
-      // await updateQuiz(currentQuiz as Quiz); // Requires implementation
-      toast({ title: "Info", description: "Update functionality to be implemented." });
-    } else {
-      await addQuiz(currentQuiz as Omit<Quiz, 'id'>);
+    try {
+      if (isEditing && currentQuiz.id) {
+        // 调用更新功能
+        const updatedQuiz = await updateQuiz(currentQuiz as Quiz);
+        if (updatedQuiz) {
+          toast({ title: "Success", description: "Quiz has been updated." });
+          await fetchAllAdminContent(); // 刷新列表
+        } else {
+          toast({ title: "Error", description: "Failed to update quiz. It may not exist.", variant: "destructive" });
+        }
+      } else {
+        await addQuiz(currentQuiz as Omit<Quiz, 'id'>);
+        toast({ title: "Success", description: "New quiz has been added." });
+      }
+      setIsModalOpen(false);
+      setCurrentQuiz({ questions: [] });
+    } catch (error) {
+      console.error('Error saving quiz:', error);
+      toast({ title: "Error", description: "An error occurred while saving the quiz.", variant: "destructive" });
     }
-    setIsModalOpen(false);
-    setCurrentQuiz({ questions: [] });
   };
   
-  const handleDeleteQuiz = (quizId: string) => {
-    setQuizzesList(prev => prev.filter(q => q.id !== quizId));
-    toast({ title: "Info", description: `Quiz ${quizId} would be deleted (UI only).`});
+  const handleDeleteQuiz = async (quizId: string) => {
+    try {
+      const success = await deleteQuiz(quizId);
+      toast({ title: "Success", description: "Quiz has been successfully deleted." });
+    } catch (error) {
+      console.error('Error deleting quiz:', error);
+      toast({ title: "Error", description: "An error occurred while deleting the quiz.", variant: "destructive" });
+    }
   };
 
   const handleQuestionChange = (qIndex: number, field: keyof QuizQuestion, value: any) => {
@@ -186,14 +203,14 @@ export default function AdminQuizzesPage() {
                 <TableBody>
                   {filteredQuizzes.map((quiz) => (
                     <TableRow key={quiz.id}>
-                      <TableCell>{format(new Date(quiz.date), 'PP')}</TableCell> {/* Ensure date is valid */}
+                      <TableCell>{format(new Date(quiz.date), 'PP')}</TableCell>
                       <TableCell className="font-medium">{quiz.title}</TableCell>
                       <TableCell>{quiz.questions.length}</TableCell>
                       <TableCell className="space-x-2">
                         <Button variant="outline" size="sm" onClick={() => handleOpenModal(quiz)}>
                           <Edit2 className="mr-1 h-4 w-4" /> Edit
                         </Button>
-                         <AlertDialog>
+                        <AlertDialog>
                           <AlertDialogTrigger asChild>
                              <Button variant="destructive" size="sm">
                                 <Trash2 className="mr-1 h-4 w-4" /> Delete
