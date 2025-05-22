@@ -77,7 +77,7 @@ export default function LearningPage() {
                 <CardDescription>Material for: {format(parseISO(material.date), "PPP")}</CardDescription>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[400px] p-1 pr-4 rounded-md border bg-secondary/30">
+                <ScrollArea className="h-[600px] p-1 pr-4 rounded-md border bg-secondary/30">
                   <div 
                     className="prose prose-lg max-w-none p-4" 
                     dangerouslySetInnerHTML={{ 
@@ -165,18 +165,6 @@ export default function LearningPage() {
                     }} 
                   />
                 </ScrollArea>
-                <div className="mt-6 flex justify-center">
-                    <Image 
-                      src={`https://picsum.photos/seed/${material.id}/600/300`} 
-                      alt={material.title} 
-                      width={600} 
-                      height={300} 
-                      className="rounded-lg shadow-lg" 
-                      data-ai-hint="educational content"
-                      priority
-                      key={material.id}
-                    />
-                </div>
               </CardContent>
             </Card>
           ) : (
